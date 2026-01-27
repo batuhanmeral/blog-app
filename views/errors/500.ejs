@@ -1,0 +1,93 @@
+<%- include('../web/partials/header') %>
+
+<section class="page-header error-page">
+    <div class="container">
+        <h1 class="error-code">500</h1>
+        <h2 class="error-title">Sunucu Hatası</h2>
+        <p class="error-message"><%= typeof message !== 'undefined' ? message : 'Bir şeyler yanlış gitti. Lütfen daha sonra tekrar deneyin.' %></p>
+        
+        <% if (typeof error !== 'undefined' && error) { %>
+        <div class="error-details">
+            <details>
+                <summary>Hata Detayları (Geliştirici)</summary>
+                <pre><%= error.message %></pre>
+                <% if (typeof stack !== 'undefined' && stack) { %>
+                <pre class="stack-trace"><%= stack %></pre>
+                <% } %>
+            </details>
+        </div>
+        <% } %>
+        
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+            <a href="javascript:history.back()" class="btn btn-outline">Geri Dön</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.error-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.error-code {
+    font-size: 8rem;
+    font-weight: 800;
+    color: #ef4444;
+    line-height: 1;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 40px rgba(239, 68, 68, 0.3);
+}
+.error-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+.error-message {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.error-details {
+    margin: 2rem auto;
+    max-width: 800px;
+    text-align: left;
+}
+.error-details details {
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 8px;
+    padding: 1rem;
+}
+.error-details summary {
+    cursor: pointer;
+    color: #ef4444;
+    font-weight: 500;
+}
+.error-details pre {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(0,0,0,0.3);
+    border-radius: 4px;
+    overflow-x: auto;
+    font-size: 12px;
+    color: var(--text-muted);
+}
+.stack-trace {
+    max-height: 300px;
+    overflow-y: auto;
+}
+</style>
+
+<%- include('../web/partials/footer') %>

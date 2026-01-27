@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof title !='undefined' ? title : 'Admin Paneli' %> | Batuhan Meral
+    </title>
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .admin-nav {
+            background: rgba(0, 0, 0, 0.9);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+
+        .admin-nav .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .admin-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .admin-links a {
+            color: var(--text-muted);
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .admin-links a:hover,
+        .admin-links a.active {
+            color: var(--primary-color);
+        }
+
+        .admin-main {
+            padding-top: 40px;
+            padding-bottom: 60px;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg-card);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .admin-table th,
+        .admin-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .admin-table th {
+            background: rgba(255, 255, 255, 0.05);
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .admin-table td {
+            color: var(--text-muted);
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn-edit {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #ef4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="admin-nav">
+        <div class="container nav-container">
+            <div class="logo">
+                <a href="/admin/dashboard">Admin<span class="emphasis">Panel</span></a>
+            </div>
+            <div class="admin-links">
+                <a href="/admin/dashboard" class="<%= path === '/admin/dashboard' ? 'active' : '' %>">Dashboard</a>
+
+                <a href="/admin/posts" class="<%= path.includes('/admin/posts') ? 'active' : '' %>">Makaleler</a>
+
+                <% if (user.role==='admin' ) { %>
+                    <a href="/admin/categories" class="<%= path.includes('/admin/categories') ? 'active' : '' %>">Kategoriler</a>
+                    <a href="/admin/comments" class="<%= path.includes('/admin/comments') ? 'active' : '' %>">Yorumlar</a>
+                    <a href="/admin/users" class="<%= path.includes('/admin/users') ? 'active' : '' %>">Kullanıcılar</a>
+                    <a href="/admin/messages"
+                        class="<%= path.includes('/admin/messages') ? 'active' : '' %>">Mesajlar</a>
+                    <a href="/admin/audit" class="<%= path.includes('/admin/audit') ? 'active' : '' %>">Audit Log</a>
+                    <% } %>
+
+                        <a href="/admin/profile" class="<%= path === '/admin/profile' ? 'active' : '' %>">Profilim</a>
+
+                        <a href="/" target="_blank">Siteyi Görüntüle <i class="fas fa-external-link-alt"></i></a>
+                        <a href="/admin/logout" style="color: #ef4444;">Çıkış</a>
+            </div>
+        </div>
+    </nav>

@@ -1,0 +1,38 @@
+<%- include('../partials/header') %>
+
+    <main class="container" style="margin-top: 120px; max-width: 800px;">
+        <div class="section-header">
+            <h2 class="section-title glitch" data-text="İletişime Geç">İletişime Geç</h2>
+            <p class="section-subtitle">Projeleriniz veya sorularınız için bana yazabilirsiniz.</p>
+        </div>
+
+        <div class="contact-card">
+            <% if (locals.success) { %>
+                <div
+                    style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                    <%= success %>
+                </div>
+                <% } %>
+
+                    <form action="/contact" method="POST">
+                        <div class="form-group">
+                            <label>Adınız Soyadınız</label>
+                            <input type="text" name="name" placeholder="Örn: Ahmet Yılmaz" required>
+                        </div>
+                        <div class="form-group">
+                            <label>E-posta Adresiniz</label>
+                            <input type="email" name="email" placeholder="ornek@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Mesajınız</label>
+                            <textarea name="message" rows="5" placeholder="Mesajınızı buraya yazın..."
+                                required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Gönder</button>
+                    </form>
+        </div>
+    </main>
+
+    <div style="margin-bottom: 60px;"></div>
+
+    <%- include('../partials/footer') %>

@@ -1,0 +1,175 @@
+<%- include('../partials/header') %>
+
+<main class="container admin-main">
+    <div class="admin-header">
+        <h1>Yorum Moderasyonu</h1>
+        <div class="stats-mini">
+            <span class="stat-badge pending">Bekleyen: <%= stats.pending %></span>
+            <span class="stat-badge approved">Onaylı: <%= stats.approved %></span>
+            <span class="stat-badge rejected">Reddedilen: <%= stats.rejected %></span>
+        </div>
+    </div>
+
+    <div class="filter-tabs">
+        <a href="/admin/comments" class="<%= currentStatus === 'all' ? 'active' : '' %>">Tümü</a>
+        <a href="/admin/comments?status=pending" class="<%= currentStatus === 'pending' ? 'active' : '' %>">Bekleyenler</a>
+        <a href="/admin/comments?status=approved" class="<%= currentStatus === 'approved' ? 'active' : '' %>">Onaylananlar</a>
+        <a href="/admin/comments?status=rejected" class="<%= currentStatus === 'rejected' ? 'active' : '' %>">Reddedilenler</a>
+    </div>
+
+
+
+        <div class="admin-card">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Yazar</th>
+                        <th>Yorum</th>
+                        <th>Yazı</th>
+                        <th>Durum</th>
+                        <th>Tarih</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% if (comments && comments.length > 0) { %>
+                        <% comments.forEach(comment => { %>
+                        <tr>
+                            <td>
+                                <strong><%= comment.name %></strong>
+                                <% if (comment.email) { %>
+                                    <br><small class="text-muted"><%= comment.email %></small>
+                                <% } %>
+                            </td>
+                            <td class="comment-content">
+                                <%= comment.content.substring(0, 100) %><%= comment.content.length > 100 ? '...' : '' %>
+                            </td>
+                            <td>
+                                <% if (comment.Post) { %>
+                                    <a href="/blog/<%= comment.Post.id %>" target="_blank">
+                                        <%= comment.Post.title.substring(0, 30) %>...
+                                    </a>
+                                <% } else { %>
+                                    <span class="text-muted">Silinmiş</span>
+                                <% } %>
+                            </td>
+                            <td>
+                                <span class="status-badge status-<%= comment.status %>">
+                                    <%= comment.status === 'pending' ? 'Bekliyor' : comment.status === 'approved' ? 'Onaylı' : 'Reddedildi' %>
+                                </span>
+                            </td>
+                            <td><%= new Date(comment.date).toLocaleDateString('tr-TR') %></td>
+                            <td class="actions">
+                                <form action="/admin/comments/<%= comment.id %>/approve" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-success" title="Onayla">
+                                        <i class="fas fa-check"></i> Onayla
+                                    </button>
+                                </form>
+                                <form action="/admin/comments/<%= comment.id %>/reject" method="POST" style="display:inline;">
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Reddet">
+                                        <i class="fas fa-times"></i> Reddet
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }); %>
+                    <% } else { %>
+                        <tr>
+                            <td colspan="6" class="text-center">Yorum bulunamadı.</td>
+                        </tr>
+                    <% } %>
+                </tbody>
+            </table>
+        </div>
+</main>
+
+
+
+<style>
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.admin-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    overflow-x: auto;
+}
+.stats-mini {
+    display: flex;
+    gap: 12px;
+}
+.stat-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+}
+.stat-badge.pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+.stat-badge.approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.stat-badge.rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+.filter-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+.filter-tabs a {
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: var(--bg-card);
+    color: var(--text-muted);
+    transition: all 0.3s;
+}
+.filter-tabs a:hover, .filter-tabs a.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.bulk-actions {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: 8px;
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+.status-pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+.status-approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+.status-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+.comment-content {
+    max-width: 250px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+.actions {
+    display: flex;
+    gap: 6px;
+}
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.btn-success { background: #10b981; color: white; }
+.btn-warning { background: #f59e0b; color: white; }
+.btn-danger { background: #ef4444; color: white; }
+</style>
+
+<%- include('../partials/footer') %>

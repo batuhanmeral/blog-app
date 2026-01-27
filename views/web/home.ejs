@@ -1,0 +1,97 @@
+<%- include('partials/header') %>
+
+    <style>
+    .post-tags-mini {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+    .tag-mini {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        color: #fff;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+    .tag-mini:hover {
+        opacity: 0.8;
+    }
+    .blog-card {
+        cursor: pointer;
+    }
+    .blog-card h3 a {
+        pointer-events: none;
+    }
+    </style>
+
+    <section class="hero">
+        <div class="hero-overlay"></div>
+        <div class="container hero-content">
+            <h1 class="animate-text glitch" data-text="ZeroDayPlatform">ZeroDayPlatform</h1>
+            <p class="animate-text delay typing-cursor">Siber Güvenlik Platformu</p>
+            <div class="hero-btns animate-text delay-2">
+                <a href="/about" class="btn btn-primary">Hakkımızda</a>
+                <a href="#blog" class="btn btn-outline">Yazıları Keşfet</a>
+            </div>
+        </div>
+    </section>
+
+    <main class="container" id="blog">
+        <div class="section-header">
+            <h2 class="section-title">Son Makaleler</h2>
+        </div>
+
+        <div class="blog-grid">
+            <% if (posts.length> 0) { %>
+                <% posts.forEach(post=> { %>
+                    <article class="blog-card" data-href="/blog/<%= post.id %>">
+                        <div class="card-img-holder">
+                            <img src="<%= post.image %>" alt="<%= post.title %>">
+                        </div>
+                        <div class="card-content">
+                            <div class="meta">
+                                <span><i class="far fa-calendar"></i>
+                                    <%= new Date(post.date).toLocaleDateString('tr-TR') %>
+                                </span>
+                                <span><i class="far fa-user"></i>
+                                    <%= post.User ? (post.User.name || post.User.username) : 'Anonim' %>
+                                </span>
+                                <span><i class="far fa-clock"></i> <%= post.readTime || 5 %> dk oku</span>
+                            </div>
+                            <h3><a href="/blog/<%= post.id %>">
+                                    <%= post.title %>
+                                </a></h3>
+                            <% if (post.Categories && post.Categories.length > 0) { %>
+                            <div class="post-tags-mini">
+                                <% post.Categories.forEach(cat => { %>
+                                <a href="/blog?category=<%= cat.slug %>" class="tag-mini" style="background-color: <%= cat.color %>" onclick="event.stopPropagation();"><%= cat.name %></a>
+                                <% }); %>
+                            </div>
+                            <% } %>
+                            <p>
+                                <%= post.summary %>
+                            </p>
+                            <span class="read-more">Devamını Oku <i class="fas fa-arrow-right"></i></span>
+                        </div>
+                    </article>
+                    <% }) %>
+                        <% } else { %>
+                            <p style="text-align:center; color: var(--text-muted);">Henüz yazı eklenmemiş.</p>
+                            <% } %>
+        </div>
+    </main>
+
+    <script>
+    document.querySelectorAll('.blog-card[data-href]').forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (!e.target.closest('.tag-mini')) {
+                window.location.href = this.dataset.href;
+            }
+        });
+    });
+    </script>
+
+    <%- include('partials/footer') %>

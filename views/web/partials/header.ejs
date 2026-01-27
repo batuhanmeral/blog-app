@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        <%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'ZeroDayPlatform') %> | Siber Güvenlik Platformu
+    </title>
+    <meta name="description"
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'ZeroDayPlatform - Yazılım, Siber Güvenlik Platformu') %>">
+    <meta name="keywords"
+        content="<%= typeof seoKeywords != 'undefined' && seoKeywords ? seoKeywords : (typeof metaKeywords != 'undefined' ? metaKeywords : 'yazılım, siber güvenlik, teknoloji, zerodayplatform, zero day, platform') %>">
+    
+    <meta property="og:type" content="<%= typeof ogType != 'undefined' ? ogType : 'website' %>">
+    <meta property="og:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : 'https://zerodayplatform.com' %>">
+    <meta property="og:title" content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'ZeroDayPlatform') %>">
+    <meta property="og:description" content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'ZeroDayPlatform - Yazılım, Siber Güvenlik Platformu') %>">
+    <meta property="og:image" content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : 'https://zerodayplatform.com' %>">
+    <meta property="twitter:title" content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'ZeroDayPlatform') %>">
+    <meta property="twitter:description" content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'ZeroDayPlatform - Yazılım, Siber Güvenlik Platformu') %>">
+    <meta property="twitter:image" content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
+
+    <% if (typeof canonicalUrl != 'undefined' && canonicalUrl) { %>
+    <link rel="canonical" href="<%= canonicalUrl %>">
+    <% } %>
+
+    <link rel="stylesheet" href="/assets/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+
+<body>
+    <canvas id="matrix-canvas"></canvas>
+
+    <nav class="navbar">
+        <div class="container nav-container">
+            <div class="logo">
+                <a href="/">ZeroDay<span class="emphasis">Platform</span></a>
+            </div>
+            <div class="hamburger">
+                <i class="fas fa-bars"></i>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/" class="<%= path === '/' ? 'active' : '' %>">Ana Sayfa</a></li>
+                <li><a href="/blog" class="<%= path.includes('/blog') ? 'active' : '' %>">Makaleler</a></li>
+                <li><a href="/about" class="<%= path === '/about' ? 'active' : '' %>">Hakkımızda</a></li>
+                <li><a href="/contact" class="<%= path === '/contact' ? 'active' : '' %>">İletişim</a></li>
+                <% if (user) { %>
+                    <li><a href="/admin/dashboard">Panel</a></li>
+                    <li><a href="/admin/logout">Çıkış</a></li>
+                <% } else { %>
+                    <li><a href="/admin/login" id="login-btn">Giriş Yap</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </nav>

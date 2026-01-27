@@ -1,0 +1,118 @@
+<%- include('../partials/header') %>
+
+    <style>
+    .post-tags-detail {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 15px;
+    }
+    .tag-detail {
+        display: inline-block;
+        padding: 5px 14px;
+        border-radius: 15px;
+        font-size: 13px;
+        color: #fff;
+        text-decoration: none;
+        transition: opacity 0.2s;
+    }
+    .tag-detail:hover {
+        opacity: 0.8;
+    }
+    </style>
+
+    <header class="article-header">
+        <div class="container">
+            <h1>
+                <%= post.title %>
+            </h1>
+            <div class="meta">
+                <span><i class="far fa-calendar"></i>
+                    <%= new Date(post.date).toLocaleDateString('tr-TR') %>
+                </span>
+                <span><i class="far fa-user"></i>
+                    <%= post.User ? (post.User.name || post.User.username) : 'Anonim' %>
+                </span>
+                <span><i class="far fa-clock"></i> <%= post.readTime || 5 %> dk oku</span>
+                <span><i class="far fa-eye"></i> <%= post.viewCount || 0 %> görüntülenme</span>
+            </div>
+            <% if (post.Categories && post.Categories.length > 0) { %>
+            <div class="post-tags-detail">
+                <% post.Categories.forEach(cat => { %>
+                <a href="/blog?category=<%= cat.slug %>" class="tag-detail" style="background-color: <%= cat.color %>"><%= cat.name %></a>
+                <% }); %>
+            </div>
+            <% } %>
+        </div>
+    </header>
+
+    <main class="container article-content">
+        <img src="<%= post.image %>" alt="<%= post.title %>" class="article-cover">
+
+        <div class="content-body">
+            <%- content %>
+        </div>
+
+        <div class="share-buttons" style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <span style="color: var(--text-muted); margin-right: 10px;">Paylaş:</span>
+            <a href="#" style="color: var(--primary-color); font-size: 1.2rem; margin-right: 15px;"><i
+                    class="fab fa-twitter"></i></a>
+            <a href="#" style="color: var(--primary-color); font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
+        </div>
+
+        <div id="comments" style="margin-top: 60px;">
+            <h3 style="margin-bottom: 30px; border-left: 4px solid var(--primary-color); padding-left: 15px;">Yorumlar (
+                <%= post.Comments ? post.Comments.length : 0 %>)
+            </h3>
+
+            <% if (typeof successMessage !== 'undefined' || (typeof query !== 'undefined' && query.comment === 'pending')) { %>
+            <div class="alert alert-info" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
+                <i class="fas fa-check-circle"></i> Yorumunuz gönderildi. Onaylandıktan sonra yayınlanacaktır.
+            </div>
+            <% } %>
+
+            <% if (post.Comments && post.Comments.length > 0) { %>
+                <div class="comments-list" style="margin-bottom: 40px;">
+                    <% post.Comments.forEach(comment => { %>
+                        <div class="comment-item"
+                            style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                                <strong style="color: var(--primary-color);">
+                                    <%= comment.name %>
+                                </strong>
+                                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                                    <%= new Date(comment.date).toLocaleDateString('tr-TR') %>
+                                </span>
+                            </div>
+                            <p style="color: var(--text-main); margin: 0;">
+                                <%= comment.content %>
+                            </p>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <p style="color: var(--text-muted); text-align: center; margin-bottom: 40px;">Henüz yorum yok. İlk yorumu siz yapın!</p>
+            <% } %>
+
+            <div class="contact-card" style="margin-bottom: 60px;">
+                <h4 style="margin-bottom: 20px;">Yorum Yap</h4>
+                <form action="/blog/<%= post.id %>/comment" method="POST">
+                    <div class="form-group">
+                        <label>İsim</label>
+                        <input type="text" name="name" required placeholder="Adınız">
+                    </div>
+                    <div class="form-group">
+                        <label>E-posta (Opsiyonel)</label>
+                        <input type="email" name="email" placeholder="mail@example.com">
+                    </div>
+                    <div class="form-group">
+                        <label>Yorum</label>
+                        <textarea name="content" rows="3" required placeholder="Düşünceleriniz..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Gönder</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <%- include('../partials/footer') %>

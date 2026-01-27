@@ -1,0 +1,41 @@
+<%- include('../partials/header') %>
+
+    <main class="container admin-main" style="max-width: 600px;">
+        <div class="section-header">
+            <h2 class="section-title">Kullanıcı Düzenle</h2>
+        </div>
+
+        <div class="contact-card">
+            <form action="/admin/users/edit/<%= userToEdit.id %>" method="POST">
+                <div class="form-group">
+                    <label>Ad Soyad</label>
+                    <input type="text" name="name" value="<%= userToEdit.name || '' %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Kullanıcı Adı</label>
+                    <input type="text" name="username" value="<%= userToEdit.username %>" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Şifre (Değiştirmek istemiyorsanız boş bırakın)</label>
+                    <input type="password" name="password">
+                </div>
+
+                <div class="form-group">
+                    <label>Rol</label>
+                    <select name="role"
+                        style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; border-radius: 8px;">
+                        <option value="writer" <%=userToEdit.role==='writer' ? 'selected' : '' %>>Yazıcı (Sadece Makale)
+                        </option>
+                        <option value="admin" <%=userToEdit.role==='admin' ? 'selected' : '' %>>Admin (Tam Yetki)
+                        </option>
+                    </select>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Güncelle</button>
+            </form>
+        </div>
+    </main>
+
+<%- include('../partials/footer') %>

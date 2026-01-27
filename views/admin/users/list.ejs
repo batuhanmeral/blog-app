@@ -1,0 +1,69 @@
+<%- include('../partials/header') %>
+
+    <main class="container admin-main">
+        <div class="section-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="section-title" style="font-size: 1.8rem; margin:0;">Kullanıcılar</h2>
+            <a href="/admin/users/add" class="btn btn-primary">+ Yeni Kullanıcı Ekle</a>
+        </div>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Kullanıcı Adı</th>
+                    <th>Ad Soyad</th>
+                    <th>Rol</th>
+                    <th>Kayıt Tarihi</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (users.length > 0) { %>
+                    <% users.forEach(u => { %>
+                        <tr>
+                            <td><%= u.username %></td>
+                            <td><%= u.name || '-' %></td>
+                            <td>
+                                <span class="role-badge role-<%= u.role %>">
+                                    <%= u.role === 'admin' ? 'Admin' : 'Yazar' %>
+                                </span>
+                            </td>
+                            <td><%= new Date(u.date || u.createdAt).toLocaleDateString('tr-TR') %></td>
+                            <td>
+                                <% if (u.role !== 'admin') { %>
+                                <a href="/admin/users/edit/<%= u.id %>" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                <form action="/admin/users/delete/<%= u.id %>" method="POST" style="display:inline;"
+                                    onsubmit="return confirm('Kullanıcıyı silmek istediğinize emin misiniz?');">
+                                    <button type="submit" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>
+                                </form>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="5" style="text-align: center;">Kullanıcı bulunamadı.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+
+        <style>
+        .role-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .role-admin {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        .role-writer {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        </style>
+    </main>
+
+<%- include('../partials/footer') %>

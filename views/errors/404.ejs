@@ -1,0 +1,51 @@
+<%- include('../web/partials/header') %>
+
+<section class="page-header error-page">
+    <div class="container">
+        <h1 class="error-code">404</h1>
+        <h2 class="error-title">Sayfa Bulunamadı</h2>
+        <p class="error-message"><%= typeof message !== 'undefined' ? message : 'Aradığınız sayfa mevcut değil veya taşınmış olabilir.' %></p>
+        <div class="error-actions">
+            <a href="/" class="btn btn-primary">Ana Sayfaya Dön</a>
+            <a href="/blog" class="btn btn-outline">Makalelere Git</a>
+        </div>
+    </div>
+</section>
+
+<style>
+.error-page {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.error-code {
+    font-size: 8rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+    margin-bottom: 1rem;
+    text-shadow: 0 0 40px rgba(16, 185, 129, 0.3);
+}
+.error-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--text-main);
+}
+.error-message {
+    color: var(--text-muted);
+    margin-bottom: 2rem;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.error-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+</style>
+
+<%- include('../web/partials/footer') %>

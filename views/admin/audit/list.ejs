@@ -1,0 +1,205 @@
+<%- include('../partials/header') %>
+
+<main class="container admin-main">
+    <div class="section-header">
+        <h2 class="section-title">İşlem Kayıtları (Audit Log)</h2>
+        <p class="section-subtitle">Sistemdeki tüm admin işlemlerinin kaydı</p>
+    </div>
+
+    <div class="filters-container" style="margin-bottom: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+        <form method="GET" action="/admin/audit" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+            <select name="action" class="filter-select">
+                <option value="">Tüm İşlemler</option>
+                <% actions.forEach(action => { %>
+                <option value="<%= action %>" <%= filters.action === action ? 'selected' : '' %>><%= action.replace(/_/g, ' ') %></option>
+                <% }); %>
+            </select>
+            
+            <select name="username" class="filter-select">
+                <option value="">Tüm Kullanıcılar</option>
+                <% users.forEach(username => { %>
+                <option value="<%= username %>" <%= filters.username === username ? 'selected' : '' %>><%= username %></option>
+                <% }); %>
+            </select>
+
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Filtrele</button>
+
+            <% if (filters.action || filters.username) { %>
+            <a href="/admin/audit" class="btn btn-secondary" style="padding: 10px 20px;">Filtreleri Temizle</a>
+            <% } %>
+        </form>
+
+        <form method="POST" action="/admin/audit/clear-all" onsubmit="return confirm('Tüm işlem kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz!');">
+            <button type="submit" class="btn btn-danger" style="padding: 10px 20px;">
+                <i class="fas fa-trash"></i> Tüm Kayıtları Temizle
+            </button>
+        </form>
+    </div>
+
+    <p style="color: var(--text-muted); margin-bottom: 15px;">
+        Toplam <strong><%= pagination.total %></strong> kayıt bulundu
+    </p>
+
+    <div class="table-responsive">
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th style="width: 180px;">Tarih</th>
+                    <th style="width: 120px;">Kullanıcı</th>
+                    <th style="width: 150px;">İşlem</th>
+                    <th>Detay</th>
+                    <th style="width: 130px;">IP Adresi</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (logs.length === 0) { %>
+                <tr>
+                    <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
+                        Henüz kayıt bulunmuyor
+                    </td>
+                </tr>
+                <% } else { %>
+                <% logs.forEach(log => { %>
+                <tr>
+                    <td>
+                        <span style="color: var(--text-muted); font-size: 13px;">
+                            <%= new Date(log.createdAt).toLocaleString('tr-TR') %>
+                        </span>
+                    </td>
+                    <td>
+                        <span style="font-weight: 600; color: var(--primary-color);"><%= log.username %></span>
+                    </td>
+                    <td>
+                        <span class="action-badge action-<%= log.action.split('_')[0].toLowerCase() %>">
+                            <% if (log.action.includes('LOGIN')) { %>
+                                <i class="fas fa-sign-in-alt"></i>
+                            <% } else if (log.action.includes('LOGOUT')) { %>
+                                <i class="fas fa-sign-out-alt"></i>
+                            <% } else if (log.action.includes('CREATE')) { %>
+                                <i class="fas fa-plus"></i>
+                            <% } else if (log.action.includes('UPDATE')) { %>
+                                <i class="fas fa-edit"></i>
+                            <% } else if (log.action.includes('DELETE')) { %>
+                                <i class="fas fa-trash"></i>
+                            <% } else { %>
+                                <i class="fas fa-cog"></i>
+                            <% } %>
+                            <%= log.action.replace(/_/g, ' ') %>
+                        </span>
+                    </td>
+                    <td>
+                        <% if (log.targetType && log.targetTitle) { %>
+                        <span style="color: var(--text-muted);"><%= log.targetType %>:</span>
+                        <strong><%= log.targetTitle %></strong>
+                        <% } else { %>
+                        <span style="color: var(--text-muted);">-</span>
+                        <% } %>
+                    </td>
+                    <td>
+                        <code style="font-size: 12px; background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px;">
+                            <%= log.ipAddress || '-' %>
+                        </code>
+                    </td>
+                </tr>
+                <% }); %>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+
+    <% if (pagination.totalPages > 1) { %>
+    <div class="pagination" style="margin-top: 30px; display: flex; justify-content: center; gap: 10px;">
+        <% if (pagination.page > 1) { %>
+        <a href="/admin/audit?page=<%= pagination.page - 1 %>&action=<%= filters.action %>&username=<%= filters.username %>" class="btn btn-secondary">
+            <i class="fas fa-chevron-left"></i> Önceki
+        </a>
+        <% } %>
+        
+        <span style="display: flex; align-items: center; padding: 0 15px; color: var(--text-muted);">
+            Sayfa <%= pagination.page %> / <%= pagination.totalPages %>
+        </span>
+        
+        <% if (pagination.page < pagination.totalPages) { %>
+        <a href="/admin/audit?page=<%= pagination.page + 1 %>&action=<%= filters.action %>&username=<%= filters.username %>" class="btn btn-secondary">
+            Sonraki <i class="fas fa-chevron-right"></i>
+        </a>
+        <% } %>
+    </div>
+    <% } %>
+</main>
+
+<style>
+.filter-select {
+    padding: 10px 15px;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-main);
+    font-size: 14px;
+    cursor: pointer;
+}
+.filter-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.action-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+.action-login { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.action-logout { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.action-create { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.action-update { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
+.action-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+.action-approve { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
+.action-read { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.btn-secondary {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    color: var(--text-main);
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+.btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
+</style>
+
+<%- include('../partials/footer') %>

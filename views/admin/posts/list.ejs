@@ -1,0 +1,154 @@
+<%- include('../partials/header') %>
+
+    <main class="container admin-main">
+        <div class="section-header"
+            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 class="section-title" style="font-size: 1.8rem; margin:0;">Makaleler</h2>
+            <a href="/admin/posts/add" class="btn btn-primary">+ Yeni Yazı Ekle</a>
+        </div>
+
+        <div class="filter-tabs" style="margin-bottom: 20px;">
+            <a href="/admin/posts" class="filter-tab <%= !locals.query || !locals.query.status ? 'active' : '' %>">Tümü</a>
+            <a href="/admin/posts?status=published" class="filter-tab">Yayında</a>
+            <a href="/admin/posts?status=pending" class="filter-tab">Bekleyen</a>
+            <a href="/admin/posts?status=rejected" class="filter-tab">Reddedilen</a>
+        </div>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Görsel</th>
+                    <th>Başlık</th>
+                    <th>Yazar</th>
+                    <th>Durum</th>
+                    <th>İstatistik</th>
+                    <th>Tarih</th>
+                    <th>İşlemler</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (posts.length > 0) { %>
+                    <% posts.forEach(post => { %>
+                        <tr>
+                            <td>
+                                <img src="<%= post.image %>" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
+                            </td>
+                            <td>
+                                <div class="post-title-cell">
+                                    <a href="/blog/<%= post.id %>" target="_blank"><%= post.title %></a>
+                                    <% if (post.Tags && post.Tags.length > 0) { %>
+                                    <div class="post-tags">
+                                        <% post.Tags.forEach(tag => { %>
+                                        <span class="mini-tag" style="background-color: <%= tag.color %>"><%= tag.name %></span>
+                                        <% }); %>
+                                    </div>
+                                    <% } %>
+                                </div>
+                            </td>
+                            <td><%= post.User ? (post.User.name || post.User.username) : 'Bilinmeyen' %></td>
+                            <td>
+                                <span class="status-badge status-<%= post.status %>">
+                                    <%= post.status === 'published' ? 'Yayında' : post.status === 'pending' ? 'Bekliyor' : post.status === 'rejected' ? 'Reddedildi' : post.status %>
+                                </span>
+                            </td>
+                            <td class="stats-cell">
+                                <span title="Görüntülenme"><i class="fas fa-eye"></i> <%= post.viewCount || 0 %></span>
+                                <span title="Okuma süresi"><i class="fas fa-clock"></i> <%= post.readTime || 1 %> dk</span>
+                            </td>
+                            <td><%= new Date(post.date).toLocaleDateString('tr-TR') %></td>
+                            <td>
+                                <% if (post.status === 'pending' && user.role === 'admin') { %>
+                                    <a href="/blog/<%= post.id %>" target="_blank" class="action-btn" style="background: #3b82f6; color: white;" title="Önizle">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <form action="/admin/posts/<%= post.id %>/approve" method="POST" style="display:inline;">
+                                        <button type="submit" class="action-btn" style="background: #10b981; color: white; border: none; cursor: pointer;" title="Onayla">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </form>
+                                    <form action="/admin/posts/<%= post.id %>/reject" method="POST" style="display:inline;" onsubmit="return confirm('Reddetmek istediğinize emin misiniz?');">
+                                        <button type="submit" class="action-btn" style="background: #ef4444; color: white; border: none; cursor: pointer;" title="Reddet">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                <% } else if (user.role === 'admin' || (post.userId === user.id)) { %>
+                                    <a href="/admin/posts/edit/<%= post.id %>" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                    <form action="/admin/posts/delete/<%= post.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                        <button type="submit" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>
+                                    </form>
+                                <% } else { %>
+                                    <span class="text-muted">Yetkisiz</span>
+                                <% } %>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } else { %>
+                    <tr>
+                        <td colspan="7" style="text-align: center;">Henüz yazı yok.</td>
+                    </tr>
+                <% } %>
+            </tbody>
+        </table>
+    </main>
+
+    <style>
+    .filter-tabs {
+        display: flex;
+        gap: 8px;
+    }
+    .filter-tab {
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: var(--bg-card);
+        color: var(--text-muted);
+        font-size: 14px;
+        transition: all 0.2s;
+    }
+    .filter-tab:hover, .filter-tab.active {
+        background: var(--primary-color);
+        color: #fff;
+    }
+    .post-title-cell a {
+        color: var(--text-main);
+        font-weight: 500;
+    }
+    .post-title-cell a:hover {
+        color: var(--primary-color);
+    }
+    .post-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 6px;
+    }
+    .mini-tag {
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 10px;
+        color: #fff;
+    }
+    .status-badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 500;
+    }
+    .status-published { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+    .status-pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
+    .status-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .status-draft { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
+    .stats-cell {
+        font-size: 12px;
+        color: var(--text-muted);
+    }
+    .stats-cell span {
+        display: block;
+        margin: 2px 0;
+    }
+    .stats-cell i {
+        width: 16px;
+        margin-right: 4px;
+    }
+    </style>
+
+<%- include('../partials/footer') %>

@@ -1,0 +1,105 @@
+<%- include('../partials/header') %>
+
+<main class="container admin-main">
+    <div class="admin-header">
+        <h1>Yeni Kategori Ekle</h1>
+        <a href="/admin/categories" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Geri
+        </a>
+    </div>
+
+    <div class="admin-card">
+        <form action="/admin/categories/add" method="POST" class="admin-form">
+            <div class="form-group">
+                <label for="name">Kategori Adı</label>
+                <input type="text" id="name" name="name" required placeholder="Örn: JavaScript">
+            </div>
+            
+            <div class="form-group">
+                <label for="color">Renk</label>
+                <div class="color-picker-wrapper">
+                    <input type="color" id="color" name="color" value="#10b981">
+                    <span class="color-preview" id="colorPreview">#10b981</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Önizleme</label>
+                <span class="tag-badge" id="tagPreview" style="background-color: #10b981">Kategori Adı</span>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save"></i> Kaydet
+            </button>
+        </form>
+    </div>
+</main>
+
+<script>
+document.getElementById('color').addEventListener('input', function() {
+    document.getElementById('colorPreview').textContent = this.value;
+    document.getElementById('tagPreview').style.backgroundColor = this.value;
+});
+
+document.getElementById('name').addEventListener('input', function() {
+    document.getElementById('tagPreview').textContent = this.value || 'Kategori Adı';
+});
+</script>
+
+<style>
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+.admin-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 500px;
+}
+.admin-form .form-group {
+    margin-bottom: 20px;
+}
+.admin-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+.admin-form input[type="text"] {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg-body);
+    color: var(--text-main);
+}
+.color-picker-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.color-picker-wrapper input[type="color"] {
+    width: 60px;
+    height: 40px;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+}
+.color-preview {
+    font-family: monospace;
+    color: var(--text-muted);
+}
+.tag-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 500;
+}
+</style>
+
+<%- include('../partials/footer') %>
