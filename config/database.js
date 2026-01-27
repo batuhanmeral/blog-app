@@ -1,17 +1,19 @@
-const Sequelize = require('sequelize');
-const path = require('path');
-
+const mongoose = require('mongoose');
 const config = require('./index');
+const logger = require('../utils/logger');
 
-const sequelize = new Sequelize({
-    dialect: config.database.dialect,
-    storage: config.database.storage,
-    logging: config.database.logging,
-    pool: config.database.pool,
-    define: {
-        timestamps: true,
-        underscored: false
-    }
+// Bağlantıyı kurar; hata olursa fırlatır — süreç sonlandırma kararını
+// çağıran (app.js) verir. Böylece çift exit mantığı ortadan kalkar.
+const connectDB = async () => {
+    return mongoose.connect(config.database.uri, config.database.options);
+};
+
+mongoose.connection.on('disconnected', () => {
+    logger.warn('MongoDB disconnected');
 });
 
-module.exports = sequelize;
+mongoose.connection.on('error', (err) => {
+    logger.error({ err }, 'MongoDB error');
+});
+
+module.exports = { connectDB, mongoose };

@@ -42,24 +42,25 @@
 
     <main class="container admin-main" style="max-width: 900px;">
         <div class="section-header">
-            <h2 class="section-title">Yazıyı Düzenle</h2>
+            <h2 class="section-title"><%= t('a.pf_edit_title') %></h2>
         </div>
 
         <div class="contact-card">
             <form action="/admin/posts/edit/<%= post.id %>" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <div class="form-group">
-                    <label>Başlık</label>
+                    <label><%= t('a.pf_title') %></label>
                     <input type="text" name="title" value="<%= post.title %>" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Özet</label>
+                    <label><%= t('a.pf_summary') %></label>
                     <textarea name="summary" rows="3" required><%= post.summary %></textarea>
                 </div>
 
                 <% if (categories && categories.length > 0) { %>
                 <div class="form-group">
-                    <label>Kategoriler</label>
+                    <label><%= t('a.pf_categories') %></label>
                     <div class="tags-checkbox-group">
                         <% categories.forEach(cat => { %>
                         <label class="tag-checkbox">
@@ -72,7 +73,12 @@
                 <% } %>
 
                 <div class="form-group">
-                    <label>Kapak Resmi</label>
+                    <label><%= t('a.pf_tags') %> <small style="color:var(--text-muted);"><%= t('a.pf_tags_hint') %></small></label>
+                    <input type="text" name="tags" value="<%= (post.tags || []).join(', ') %>" placeholder="örn: nodejs, güvenlik, mongodb">
+                </div>
+
+                <div class="form-group">
+                    <label><%= t('a.pf_cover') %></label>
                     <div
                         style="margin-bottom: 10px; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
                         <img src="<%= post.image %>" height="80"
@@ -80,44 +86,48 @@
                     </div>
                     <input type="file" name="image" accept="image/*"
                         style="margin-bottom: 10px; width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                    <input type="text" name="image" value="<%= post.image %>" placeholder="Resim URL">
+                    <input type="text" name="image" value="<%= post.image %>" placeholder="<%= t('a.pf_cover_url2') %>">
+                </div>
+                <div class="form-group">
+                    <label><%= t('a.pf_alt') %></label>
+                    <input type="text" name="imageAlt" maxlength="160" value="<%= post.imageAlt || '' %>" placeholder="Erişilebilirlik / SEO için">
                 </div>
 
                 <div class="form-group">
-                    <label>İçerik (Markdown)</label>
+                    <label><%= t('a.pf_content') %></label>
                     <textarea id="post-content" name="content"><%= post.content %></textarea>
                 </div>
 
                 <details class="seo-settings" style="margin-bottom: 20px;" <%= post.seoTitle || post.seoDescription ? 'open' : '' %>>
                     <summary style="cursor: pointer; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; font-weight: 600;">
-                        <i class="fas fa-search"></i> SEO Ayarları (Opsiyonel)
+                        <i class="fas fa-search"></i> <%= t('a.pf_seo') %>
                     </summary>
                     <div style="padding: 20px; background: rgba(255,255,255,0.02); border-radius: 0 0 8px 8px;">
                         <div class="form-group">
-                            <label>SEO Başlık <small style="color: var(--text-muted);">(max 70 karakter)</small></label>
+                            <label><%= t('a.pf_seo_title') %> <small style="color: var(--text-muted);">(max 70)</small></label>
                             <input type="text" name="seoTitle" maxlength="70" value="<%= post.seoTitle || '' %>" placeholder="Arama motorlarında görünecek başlık">
                         </div>
                         <div class="form-group">
-                            <label>SEO Açıklama <small style="color: var(--text-muted);">(max 160 karakter)</small></label>
+                            <label><%= t('a.pf_seo_desc') %> <small style="color: var(--text-muted);">(max 160)</small></label>
                             <textarea name="seoDescription" rows="2" maxlength="160" placeholder="Meta description - arama sonuçlarında görünür"><%= post.seoDescription || '' %></textarea>
                         </div>
                         <div class="form-group">
-                            <label>Anahtar Kelimeler</label>
+                            <label><%= t('a.pf_seo_kw') %></label>
                             <input type="text" name="seoKeywords" value="<%= post.seoKeywords || '' %>" placeholder="kelime1, kelime2, kelime3">
                         </div>
                         <div class="form-group">
-                            <label>Open Graph Görseli (Sosyal medya paylaşımları için)</label>
+                            <label><%= t('a.pf_og') %></label>
                             <input type="text" name="ogImage" value="<%= post.ogImage || '' %>" placeholder="https://... veya /assets/uploads/...">
                         </div>
                     </div>
                 </details>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Güncelle</button>
+                <button type="submit" class="btn btn-primary" style="width: 100%;"><%= t('a.update') %></button>
             </form>
         </div>
     </main>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
         const easyMDE = new EasyMDE({
             element: document.getElementById('post-content'),
             spellChecker: false,
@@ -131,7 +141,7 @@
             const pos = easyMDE.codemirror.getCursor();
             easyMDE.codemirror.replaceRange("![Resim Yükleniyor...]()", pos);
 
-            fetch("/admin/upload-image", { method: "POST", body: formData })
+            fetch("/admin/upload-image", { method: "POST", headers: { "X-CSRF-Token": "<%= csrfToken %>" }, body: formData })
                 .then(r => r.json())
                 .then(data => {
                     const content = easyMDE.value();

@@ -4,21 +4,21 @@
         <div class="about-grid">
             <div class="about-img">
                 <img src="https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=600&q=80"
-                    alt="ZeroDayPlatform Team">
+                    alt="Batuhan Meral">
             </div>
             <div class="about-text">
-                <h1 class="section-title glitch" data-text="Biz Kimiz?">Biz Kimiz?</h1>
-                <p><strong>ZeroDayPlatform</strong>, siber güvenlik tutkunu bir öğrenci tarafından kurulan, güncel siber tehditler, savunma stratejileri ve teknik analizler üzerine odaklanmış yeni nesil bir bilgi platformudur.</p>
-                <p>Adını, keşfedilmemiş zafiyetlerin kritik öneminden alan platformumuz; siber güvenlik farkındalığını artırmayı ve Türkçe kaynak havuzunu genişletmeyi hedefler. Öğrenme ve paylaşma kültürüyle beslenen ZeroDayPlatform, makaleler ve teknik incelemelerle siber güvenlik meraklılarına rehberlik eder.</p>
+                <h1 class="section-title glitch" data-text="<%= t('about.title') %>"><%= t('about.title') %></h1>
+                <p><%- t('about.p1') %></p>
+                <p><%= t('about.p2') %></p>
 
-                <h3 style="margin-top: 30px; margin-bottom: 15px;">Odak Alanlarımız</h3>
+                <h3 style="margin-top: 30px; margin-bottom: 15px;"><%= t('about.focus') %></h3>
                 <div class="skills-wrapper">
-                    <span class="skill-tag">Web Güvenliği</span>
-                    <span class="skill-tag">Ağ Güvenliği</span>
-                    <span class="skill-tag">CTF</span>
-                    <span class="skill-tag">Zero Day</span>
-                    <span class="skill-tag">Kriptoloji</span>
-                    <span class="skill-tag">Bug Bounty</span>
+                    <span class="skill-tag"><%= t('about.skill_web') %></span>
+                    <span class="skill-tag"><%= t('about.skill_net') %></span>
+                    <span class="skill-tag"><%= t('about.skill_ctf') %></span>
+                    <span class="skill-tag"><%= t('about.skill_zeroday') %></span>
+                    <span class="skill-tag"><%= t('about.skill_crypto') %></span>
+                    <span class="skill-tag"><%= t('about.skill_bugbounty') %></span>
                 </div>
             </div>
         </div>

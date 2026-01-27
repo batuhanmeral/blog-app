@@ -2,53 +2,59 @@
 
 <main class="container admin-main">
     <div class="section-header">
-        <h2 class="section-title">İşlem Kayıtları (Audit Log)</h2>
-        <p class="section-subtitle">Sistemdeki tüm admin işlemlerinin kaydı</p>
+        <h2 class="section-title"><%= t('a.audit_title') %></h2>
+        <p class="section-subtitle"><%= t('a.audit_subtitle') %></p>
     </div>
 
     <div class="filters-container" style="margin-bottom: 20px; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
         <form method="GET" action="/admin/audit" style="display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
             <select name="action" class="filter-select">
-                <option value="">Tüm İşlemler</option>
+                <option value=""><%= t('a.audit_all_actions') %></option>
                 <% actions.forEach(action => { %>
                 <option value="<%= action %>" <%= filters.action === action ? 'selected' : '' %>><%= action.replace(/_/g, ' ') %></option>
                 <% }); %>
             </select>
             
             <select name="username" class="filter-select">
-                <option value="">Tüm Kullanıcılar</option>
+                <option value=""><%= t('a.audit_all_users') %></option>
                 <% users.forEach(username => { %>
                 <option value="<%= username %>" <%= filters.username === username ? 'selected' : '' %>><%= username %></option>
                 <% }); %>
             </select>
 
-            <button type="submit" class="btn btn-primary" style="padding: 10px 20px;">Filtrele</button>
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px;"><%= t('a.audit_filter') %></button>
 
             <% if (filters.action || filters.username) { %>
-            <a href="/admin/audit" class="btn btn-secondary" style="padding: 10px 20px;">Filtreleri Temizle</a>
+            <a href="/admin/audit" class="btn btn-secondary" style="padding: 10px 20px;"><%= t('a.audit_clear_filter') %></a>
             <% } %>
         </form>
 
-        <form method="POST" action="/admin/audit/clear-all" onsubmit="return confirm('Tüm işlem kayıtlarını silmek istediğinize emin misiniz? Bu işlem geri alınamaz!');">
-            <button type="submit" class="btn btn-danger" style="padding: 10px 20px;">
-                <i class="fas fa-trash"></i> Tüm Kayıtları Temizle
-            </button>
-        </form>
+        <div style="display:flex; gap:10px;">
+            <a class="btn btn-secondary" href="/admin/audit/export/csv?<%= new URLSearchParams(filters).toString() %>" style="padding:10px 16px;"><i class="fas fa-file-csv"></i> CSV</a>
+            <a class="btn btn-secondary" href="/admin/audit/export/json?<%= new URLSearchParams(filters).toString() %>" style="padding:10px 16px;"><i class="fas fa-file-code"></i> JSON</a>
+
+            <form method="POST" action="/admin/audit/clear-all" data-confirm="<%= t('a.audit_clear_confirm') %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-danger" style="padding: 10px 20px;">
+                    <i class="fas fa-trash"></i> <%= t('a.audit_clear_all') %>
+                </button>
+            </form>
+        </div>
     </div>
 
     <p style="color: var(--text-muted); margin-bottom: 15px;">
-        Toplam <strong><%= pagination.total %></strong> kayıt bulundu
+        <%= t('a.audit_total', { n: pagination.total }) %>
     </p>
 
     <div class="table-responsive">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th style="width: 180px;">Tarih</th>
-                    <th style="width: 120px;">Kullanıcı</th>
-                    <th style="width: 150px;">İşlem</th>
-                    <th>Detay</th>
-                    <th style="width: 130px;">IP Adresi</th>
+                    <th style="width: 180px;"><%= t('a.date') %></th>
+                    <th style="width: 120px;"><%= t('a.audit_user') %></th>
+                    <th style="width: 150px;"><%= t('a.audit_action') %></th>
+                    <th><%= t('a.audit_detail') %></th>
+                    <th style="width: 130px;"><%= t('a.audit_ip') %></th>
                 </tr>
             </thead>
             <tbody>
@@ -56,7 +62,7 @@
                 <tr>
                     <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
                         <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px; display: block;"></i>
-                        Henüz kayıt bulunmuyor
+                        <%= t('a.audit_empty') %>
                     </td>
                 </tr>
                 <% } else { %>
@@ -64,7 +70,7 @@
                 <tr>
                     <td>
                         <span style="color: var(--text-muted); font-size: 13px;">
-                            <%= new Date(log.createdAt).toLocaleString('tr-TR') %>
+                            <%= new Date(log.createdAt).toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR') %>
                         </span>
                     </td>
                     <td>
@@ -112,17 +118,17 @@
     <div class="pagination" style="margin-top: 30px; display: flex; justify-content: center; gap: 10px;">
         <% if (pagination.page > 1) { %>
         <a href="/admin/audit?page=<%= pagination.page - 1 %>&action=<%= filters.action %>&username=<%= filters.username %>" class="btn btn-secondary">
-            <i class="fas fa-chevron-left"></i> Önceki
+            <i class="fas fa-chevron-left"></i> <%= t('a.audit_prev') %>
         </a>
         <% } %>
         
         <span style="display: flex; align-items: center; padding: 0 15px; color: var(--text-muted);">
-            Sayfa <%= pagination.page %> / <%= pagination.totalPages %>
+<%= t('a.audit_page', { p: pagination.page, t: pagination.totalPages }) %>
         </span>
         
         <% if (pagination.page < pagination.totalPages) { %>
         <a href="/admin/audit?page=<%= pagination.page + 1 %>&action=<%= filters.action %>&username=<%= filters.username %>" class="btn btn-secondary">
-            Sonraki <i class="fas fa-chevron-right"></i>
+<%= t('a.audit_next') %> <i class="fas fa-chevron-right"></i>
         </a>
         <% } %>
     </div>
@@ -159,8 +165,8 @@
 .action-create { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
 .action-update { background: rgba(139, 92, 246, 0.1); color: #8b5cf6; }
 .action-delete { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-.action-approve { background: rgba(34, 197, 94, 0.1); color: #22c55e; }
 .action-read { background: rgba(107, 114, 128, 0.1); color: #6b7280; }
+.action-media { background: rgba(168, 85, 247, 0.1); color: #a855f7; }
 
 .table-responsive {
     overflow-x: auto;
@@ -201,5 +207,11 @@
     background: rgba(239, 68, 68, 0.3);
 }
 </style>
+
+<script nonce="<%= cspNonce %>">
+document.querySelectorAll('form[data-confirm]').forEach(f => {
+    f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+});
+</script>
 
 <%- include('../partials/footer') %>

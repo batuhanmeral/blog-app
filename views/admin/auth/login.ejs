@@ -17,23 +17,39 @@
     <div class="hero-overlay"></div>
     <div class="blog-card" style="width: 100%; max-width: 400px; padding: 40px; z-index: 2;">
         <div style="text-align: center; margin-bottom: 30px;">
-            <h2 style="font-size: 24px;">Giriş Yap</h2>
-            <p style="color: var(--text-muted);">Admin paneline erişim</p>
+            <h2 style="font-size: 24px;"><%= t('login.title') %></h2>
+            <p style="color: var(--text-muted);"><%= t('login.subtitle') %></p>
         </div>
 
-        <form action="/admin/login" method="POST">
-            <div class="form-group">
-                <label>Kullanıcı Adı</label>
-                <input type="text" name="username" placeholder="Admin" required>
+        <% if (locals.flash && flash.error) { %>
+            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center; font-size: 14px;">
+                <%= flash.error %>
             </div>
-            <div class="form-group">
-                <label>Şifre</label>
-                <input type="password" name="password" placeholder="••••••" required>
-            </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Giriş</button>
+        <% } %>
+
+        <form action="<%= '/admin/' + (locals.loginPath || 'login') %>" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <% if (locals.stage === 'totp') { %>
+                <div class="form-group">
+                    <label><%= t('login.code_label') %></label>
+                    <input type="text" name="totp" autocomplete="one-time-code" maxlength="8" placeholder="<%= t('login.code_ph') %>" required autofocus>
+                    <small style="color: var(--text-muted);"><%= t('login.code_hint') %></small>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;"><%= t('login.verify') %></button>
+            <% } else { %>
+                <div class="form-group">
+                    <label><%= t('login.username') %></label>
+                    <input type="text" name="username" placeholder="Admin" required>
+                </div>
+                <div class="form-group">
+                    <label><%= t('login.password') %></label>
+                    <input type="password" name="password" placeholder="••••••" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;"><%= t('login.btn') %></button>
+            <% } %>
         </form>
         <div style="text-align: center; margin-top: 20px;">
-            <a href="/" style="color: var(--text-muted); font-size: 14px;">Ana Sayfaya Dön</a>
+            <a href="/" style="color: var(--text-muted); font-size: 14px;"><%= t('login.back_home') %></a>
         </div>
     </div>
 

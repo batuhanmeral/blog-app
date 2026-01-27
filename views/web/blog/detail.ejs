@@ -1,24 +1,72 @@
 <%- include('../partials/header') %>
 
+    <div id="reading-progress" aria-hidden="true"></div>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <% if (locals.jsonLd) { %>
+    <script type="application/ld+json" nonce="<%= cspNonce %>"><%- jsonLd %></script>
+    <% } %>
+
     <style>
-    .post-tags-detail {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-top: 15px;
-    }
-    .tag-detail {
-        display: inline-block;
-        padding: 5px 14px;
-        border-radius: 15px;
-        font-size: 13px;
-        color: #fff;
-        text-decoration: none;
-        transition: opacity 0.2s;
-    }
-    .tag-detail:hover {
-        opacity: 0.8;
-    }
+        .post-tags-detail {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .tag-detail {
+            display: inline-block;
+            padding: 5px 14px;
+            border-radius: 15px;
+            font-size: 13px;
+            color: #fff;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .tag-detail:hover {
+            opacity: 0.8;
+        }
+
+        .tag-detail--plain {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+        }
+
+        #reading-progress {
+            position: fixed; top: 0; left: 0; height: 3px; width: 0;
+            background: var(--primary-color); z-index: 9999; transition: width .1s linear;
+        }
+        .post-toc {
+            background: var(--bg-card); border: 1px solid var(--border);
+            border-radius: 12px; padding: 16px 20px; margin: 0 0 30px;
+        }
+        .post-toc > strong { display: block; margin-bottom: 8px; color: var(--text-main); }
+        .post-toc ul { list-style: none; padding: 0; margin: 0; }
+        .post-toc li { margin: 4px 0; }
+        .post-toc li.toc-h3 { padding-left: 16px; }
+        .post-toc a { color: var(--text-muted); text-decoration: none; font-size: 14px; }
+        .post-toc a:hover { color: var(--primary-color); }
+        .content-body pre { border-radius: 8px; overflow: auto; }
+
+        .comments-section { margin-top: 60px; border-top: 1px solid var(--border); padding-top: 30px; }
+        .comments-section h3 { margin-bottom: 20px; }
+        .comment-list { list-style: none; padding: 0; margin: 0 0 30px; }
+        .comment-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; margin-bottom: 12px; }
+        .comment-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+        .comment-date { color: var(--text-muted); font-size: 13px; }
+        .comment-body { margin: 0; white-space: pre-wrap; color: var(--text-main); }
+        .comment-form { background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+        .comment-form h4 { margin: 0 0 14px; }
+        .comment-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+        .comment-form input, .comment-form textarea { width: 100%; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 8px; color: var(--text-main); font: inherit; }
+        .comment-form textarea { margin-bottom: 12px; resize: vertical; }
+        .comment-flash { padding: 10px 14px; border-radius: 8px; margin-bottom: 16px; }
+        .comment-flash.success { background: rgba(16,185,129,.1); border: 1px solid #10b981; color: #10b981; }
+        .comment-flash.error { background: rgba(239,68,68,.1); border: 1px solid #ef4444; color: #ef4444; }
+        @media (max-width: 600px) { .comment-row { grid-template-columns: 1fr; } }
     </style>
 
     <header class="article-header">
@@ -28,91 +76,162 @@
             </h1>
             <div class="meta">
                 <span><i class="far fa-calendar"></i>
-                    <%= new Date(post.date).toLocaleDateString('tr-TR') %>
+                    <%= helpers.formatDate(post.createdAt) %>
                 </span>
-                <span><i class="far fa-user"></i>
-                    <%= post.User ? (post.User.name || post.User.username) : 'Anonim' %>
+                <span><i class="far fa-clock"></i>
+                    <%= post.readTime || 5 %> <%= t('common.minread') %>
                 </span>
-                <span><i class="far fa-clock"></i> <%= post.readTime || 5 %> dk oku</span>
-                <span><i class="far fa-eye"></i> <%= post.viewCount || 0 %> görüntülenme</span>
+                <span><i class="far fa-eye"></i>
+                    <%= post.viewCount || 0 %> <%= t('common.views') %>
+                </span>
             </div>
-            <% if (post.Categories && post.Categories.length > 0) { %>
-            <div class="post-tags-detail">
-                <% post.Categories.forEach(cat => { %>
-                <a href="/blog?category=<%= cat.slug %>" class="tag-detail" style="background-color: <%= cat.color %>"><%= cat.name %></a>
-                <% }); %>
-            </div>
+            <% if (post.categories && post.categories.length> 0) { %>
+                <div class="post-tags-detail">
+                    <% post.categories.forEach(cat=> { %>
+                        <a href="/blog?category=<%= cat.slug %>" class="tag-detail"
+                            style="background-color: <%= cat.color %>">
+                            <%= cat.name %>
+                        </a>
+                        <% }); %>
+                </div>
+                <% } %>
+            <% if (post.tags && post.tags.length > 0) { %>
+                <div class="post-tags-detail">
+                    <% post.tags.forEach(t => { %>
+                        <a href="/tag/<%= encodeURIComponent(t) %>" class="tag-detail tag-detail--plain">#<%= t %></a>
+                    <% }); %>
+                </div>
             <% } %>
         </div>
     </header>
 
     <main class="container article-content">
-        <img src="<%= post.image %>" alt="<%= post.title %>" class="article-cover">
+        <% if (post.image) { %>
+            <img src="<%= post.image %>" alt="<%= post.imageAlt || post.title %>" class="article-cover" loading="lazy">
+        <% } %>
 
+        <nav id="post-toc" class="post-toc" hidden>
+            <strong><%= t('detail.toc') %></strong>
+            <ul></ul>
+        </nav>
         <div class="content-body">
             <%- content %>
         </div>
 
-        <div class="share-buttons" style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
-            <span style="color: var(--text-muted); margin-right: 10px;">Paylaş:</span>
-            <a href="#" style="color: var(--primary-color); font-size: 1.2rem; margin-right: 15px;"><i
-                    class="fab fa-twitter"></i></a>
-            <a href="#" style="color: var(--primary-color); font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
+        <div class="share-buttons"
+            style="margin-top: 40px; border-top: 1px solid var(--border); padding-top: 20px;">
+            <span style="color: var(--text-muted); margin-right: 10px;"><%= t('detail.share') %></span>
+            <a href="https://twitter.com/intent/tweet?url=<%= encodeURIComponent(canonicalUrl) %>&text=<%= encodeURIComponent(post.title) %>"
+                target="_blank" rel="noopener" style="color: var(--primary-color); font-size: 1.2rem; margin-right: 15px;"><i class="fab fa-twitter"></i></a>
+            <a href="https://www.linkedin.com/shareArticle?mini=true&url=<%= encodeURIComponent(canonicalUrl) %>&title=<%= encodeURIComponent(post.title) %>"
+                target="_blank" rel="noopener" style="color: var(--primary-color); font-size: 1.2rem;"><i class="fab fa-linkedin"></i></a>
         </div>
 
-        <div id="comments" style="margin-top: 60px;">
-            <h3 style="margin-bottom: 30px; border-left: 4px solid var(--primary-color); padding-left: 15px;">Yorumlar (
-                <%= post.Comments ? post.Comments.length : 0 %>)
-            </h3>
-
-            <% if (typeof successMessage !== 'undefined' || (typeof query !== 'undefined' && query.comment === 'pending')) { %>
-            <div class="alert alert-info" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 12px 16px; border-radius: 8px; margin-bottom: 20px;">
-                <i class="fas fa-check-circle"></i> Yorumunuz gönderildi. Onaylandıktan sonra yayınlanacaktır.
-            </div>
-            <% } %>
-
-            <% if (post.Comments && post.Comments.length > 0) { %>
-                <div class="comments-list" style="margin-bottom: 40px;">
-                    <% post.Comments.forEach(comment => { %>
-                        <div class="comment-item"
-                            style="background: rgba(255,255,255,0.02); padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid var(--border);">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
-                                <strong style="color: var(--primary-color);">
-                                    <%= comment.name %>
-                                </strong>
-                                <span style="font-size: 0.85rem; color: var(--text-muted);">
-                                    <%= new Date(comment.date).toLocaleDateString('tr-TR') %>
-                                </span>
-                            </div>
-                            <p style="color: var(--text-main); margin: 0;">
-                                <%= comment.content %>
+        <% if (locals.related && related.length > 0) { %>
+        <section style="margin-top: 60px; border-top: 1px solid var(--border); padding-top: 30px;">
+            <h3 style="margin-bottom: 20px;"><%= t('detail.related') %></h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+                <% related.forEach(r => { %>
+                    <a href="/blog/<%= r._id %>" style="display:block; background: var(--bg-card); border-radius: 12px; overflow:hidden; text-decoration:none; color:inherit;">
+                        <% if (r.image) { %>
+                            <img src="<%= r.image %>" alt="<%= r.imageAlt || r.title %>" loading="lazy" style="width:100%; height:140px; object-fit:cover;">
+                        <% } %>
+                        <div style="padding: 15px;">
+                            <h4 style="margin:0 0 6px; font-size:1rem;"><%= r.title %></h4>
+                            <p style="color: var(--text-muted); font-size: 0.85rem; margin:0;">
+                                <%= helpers.formatDate(r.createdAt) %> · <%= r.readTime || 1 %> <%= t('common.minread') %>
                             </p>
                         </div>
-                    <% }); %>
-                </div>
-            <% } else { %>
-                <p style="color: var(--text-muted); text-align: center; margin-bottom: 40px;">Henüz yorum yok. İlk yorumu siz yapın!</p>
+                    </a>
+                <% }) %>
+            </div>
+        </section>
+        <% } %>
+
+        <section id="yorumlar" class="comments-section">
+            <h3><%= t('comments.title') %><% if (locals.comments) { %> (<%= comments.length %>)<% } %></h3>
+
+            <% if (locals.flash && flash.success) { %>
+                <div class="comment-flash success"><%= flash.success %></div>
+            <% } %>
+            <% if (locals.flash && flash.error) { %>
+                <div class="comment-flash error"><%= flash.error %></div>
             <% } %>
 
-            <div class="contact-card" style="margin-bottom: 60px;">
-                <h4 style="margin-bottom: 20px;">Yorum Yap</h4>
-                <form action="/blog/<%= post.id %>/comment" method="POST">
-                    <div class="form-group">
-                        <label>İsim</label>
-                        <input type="text" name="name" required placeholder="Adınız">
-                    </div>
-                    <div class="form-group">
-                        <label>E-posta (Opsiyonel)</label>
-                        <input type="email" name="email" placeholder="mail@example.com">
-                    </div>
-                    <div class="form-group">
-                        <label>Yorum</label>
-                        <textarea name="content" rows="3" required placeholder="Düşünceleriniz..."></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Gönder</button>
-                </form>
-            </div>
-        </div>
+            <% if (locals.comments && comments.length > 0) { %>
+                <ul class="comment-list">
+                    <% comments.forEach(c => { %>
+                        <li class="comment-item">
+                            <div class="comment-head">
+                                <strong><%= c.name %></strong>
+                                <span class="comment-date"><%= helpers.formatDate(c.createdAt) %></span>
+                            </div>
+                            <p class="comment-body"><%= c.body %></p>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <p style="color: var(--text-muted);"><%= t('comments.empty') %></p>
+            <% } %>
+
+            <form action="/blog/<%= post._id %>/comments" method="POST" class="comment-form">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div style="position:absolute; left:-9999px;" aria-hidden="true">
+                    <label>Website (boş bırakın)</label>
+                    <input type="text" name="website" tabindex="-1" autocomplete="off">
+                </div>
+                <h4><%= t('comments.add') %></h4>
+                <div class="comment-row">
+                    <input type="text" name="name" placeholder="<%= t('comments.name') %>" maxlength="80" required>
+                    <input type="email" name="email" placeholder="<%= t('comments.email') %>" maxlength="254">
+                </div>
+                <textarea name="body" rows="4" placeholder="<%= t('comments.body_ph') %>" maxlength="3000" required></textarea>
+                <button type="submit" class="btn btn-primary"><%= t('comments.send') %></button>
+                <p style="color: var(--text-muted); font-size: 13px; margin-top: 8px;"><%= t('comments.note') %></p>
+            </form>
+        </section>
     </main>
+
+    <script nonce="<%= cspNonce %>">
+    (function () {
+        // Kod sözdizimi vurgulama
+        if (window.hljs) {
+            document.querySelectorAll('.content-body pre code').forEach(b => hljs.highlightElement(b));
+        }
+
+        // İçindekiler — h2/h3 başlıklarından otomatik (en az 3 başlık varsa)
+        const body = document.querySelector('.content-body');
+        const toc = document.getElementById('post-toc');
+        if (body && toc) {
+            const heads = body.querySelectorAll('h2, h3');
+            if (heads.length >= 3) {
+                const ul = toc.querySelector('ul');
+                heads.forEach((h, i) => {
+                    if (!h.id) h.id = 'baslik-' + i;
+                    const li = document.createElement('li');
+                    li.className = 'toc-' + h.tagName.toLowerCase();
+                    const a = document.createElement('a');
+                    a.href = '#' + h.id;
+                    a.textContent = h.textContent;
+                    li.appendChild(a);
+                    ul.appendChild(li);
+                });
+                toc.hidden = false;
+            }
+        }
+
+        // Okuma ilerleme çubuğu
+        const bar = document.getElementById('reading-progress');
+        if (bar) {
+            const onScroll = () => {
+                const el = document.documentElement;
+                const max = el.scrollHeight - el.clientHeight;
+                bar.style.width = max > 0 ? (el.scrollTop / max * 100) + '%' : '0%';
+            };
+            document.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        }
+    })();
+    </script>
 
     <%- include('../partials/footer') %>

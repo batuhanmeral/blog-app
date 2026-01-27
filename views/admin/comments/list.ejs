@@ -1,175 +1,86 @@
 <%- include('../partials/header') %>
 
-<main class="container admin-main">
-    <div class="admin-header">
-        <h1>Yorum Moderasyonu</h1>
-        <div class="stats-mini">
-            <span class="stat-badge pending">Bekleyen: <%= stats.pending %></span>
-            <span class="stat-badge approved">Onaylı: <%= stats.approved %></span>
-            <span class="stat-badge rejected">Reddedilen: <%= stats.rejected %></span>
+    <main class="container admin-main">
+        <div class="section-header" style="margin-bottom: 20px;">
+            <h2 class="section-title" style="font-size: 1.8rem; margin: 0;"><%= t('a.cm_title') %></h2>
         </div>
-    </div>
 
-    <div class="filter-tabs">
-        <a href="/admin/comments" class="<%= currentStatus === 'all' ? 'active' : '' %>">Tümü</a>
-        <a href="/admin/comments?status=pending" class="<%= currentStatus === 'pending' ? 'active' : '' %>">Bekleyenler</a>
-        <a href="/admin/comments?status=approved" class="<%= currentStatus === 'approved' ? 'active' : '' %>">Onaylananlar</a>
-        <a href="/admin/comments?status=rejected" class="<%= currentStatus === 'rejected' ? 'active' : '' %>">Reddedilenler</a>
-    </div>
+        <% if (locals.flash && flash.success) { %>
+            <div style="background: rgba(16,185,129,.1); border:1px solid #10b981; color:#10b981; padding:10px; border-radius:8px; margin-bottom:15px;"><%= flash.success %></div>
+        <% } %>
+        <% if (locals.flash && flash.error) { %>
+            <div style="background: rgba(239,68,68,.1); border:1px solid #ef4444; color:#ef4444; padding:10px; border-radius:8px; margin-bottom:15px;"><%= flash.error %></div>
+        <% } %>
 
-
-
-        <div class="admin-card">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Yazar</th>
-                        <th>Yorum</th>
-                        <th>Yazı</th>
-                        <th>Durum</th>
-                        <th>Tarih</th>
-                        <th>İşlemler</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <% if (comments && comments.length > 0) { %>
-                        <% comments.forEach(comment => { %>
-                        <tr>
-                            <td>
-                                <strong><%= comment.name %></strong>
-                                <% if (comment.email) { %>
-                                    <br><small class="text-muted"><%= comment.email %></small>
-                                <% } %>
-                            </td>
-                            <td class="comment-content">
-                                <%= comment.content.substring(0, 100) %><%= comment.content.length > 100 ? '...' : '' %>
-                            </td>
-                            <td>
-                                <% if (comment.Post) { %>
-                                    <a href="/blog/<%= comment.Post.id %>" target="_blank">
-                                        <%= comment.Post.title.substring(0, 30) %>...
-                                    </a>
-                                <% } else { %>
-                                    <span class="text-muted">Silinmiş</span>
-                                <% } %>
-                            </td>
-                            <td>
-                                <span class="status-badge status-<%= comment.status %>">
-                                    <%= comment.status === 'pending' ? 'Bekliyor' : comment.status === 'approved' ? 'Onaylı' : 'Reddedildi' %>
-                                </span>
-                            </td>
-                            <td><%= new Date(comment.date).toLocaleDateString('tr-TR') %></td>
-                            <td class="actions">
-                                <form action="/admin/comments/<%= comment.id %>/approve" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-success" title="Onayla">
-                                        <i class="fas fa-check"></i> Onayla
-                                    </button>
-                                </form>
-                                <form action="/admin/comments/<%= comment.id %>/reject" method="POST" style="display:inline;">
-                                    <button type="submit" class="btn btn-sm btn-warning" title="Reddet">
-                                        <i class="fas fa-times"></i> Reddet
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <% }); %>
-                    <% } else { %>
-                        <tr>
-                            <td colspan="6" class="text-center">Yorum bulunamadı.</td>
-                        </tr>
-                    <% } %>
-                </tbody>
-            </table>
+        <div class="filter-tabs" style="display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap;">
+            <a href="/admin/comments?status=pending" class="filter-tab <%= status === 'pending' ? 'active' : '' %>"><%= t('a.cm_pending') %> (<%= counts.pending %>)</a>
+            <a href="/admin/comments?status=approved" class="filter-tab <%= status === 'approved' ? 'active' : '' %>"><%= t('a.cm_approved') %> (<%= counts.approved %>)</a>
+            <a href="/admin/comments?status=spam" class="filter-tab <%= status === 'spam' ? 'active' : '' %>"><%= t('a.cm_spam') %> (<%= counts.spam %>)</a>
         </div>
-</main>
 
+        <% if (comments.length === 0) { %>
+            <p style="text-align:center; color: var(--text-muted); padding: 40px 0;"><%= t('a.cm_empty') %></p>
+        <% } else { %>
+            <div class="comment-mod-list">
+                <% comments.forEach(c => { %>
+                    <div class="comment-mod">
+                        <div class="comment-mod-meta">
+                            <strong><%= c.name %></strong>
+                            <% if (c.email) { %><span class="muted"><%= c.email %></span><% } %>
+                            <span class="muted">· <%= new Date(c.createdAt).toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR') %></span>
+                            <% if (c.post) { %>
+                                <span class="muted">· <a href="/blog/<%= c.post._id %>#yorumlar" target="_blank"><%= c.post.title %></a></span>
+                            <% } %>
+                        </div>
+                        <p class="comment-mod-body"><%= c.body %></p>
+                        <div class="comment-mod-actions">
+                            <% if (status !== 'approved') { %>
+                            <form action="/admin/comments/<%= c._id %>/approve" method="POST">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input type="hidden" name="from" value="<%= status %>">
+                                <button type="submit" class="btn-mod approve"><%= t('a.cm_approve') %></button>
+                            </form>
+                            <% } %>
+                            <% if (status !== 'spam') { %>
+                            <form action="/admin/comments/<%= c._id %>/spam" method="POST">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input type="hidden" name="from" value="<%= status %>">
+                                <button type="submit" class="btn-mod spam"><%= t('a.cm_spam_btn') %></button>
+                            </form>
+                            <% } %>
+                            <form action="/admin/comments/delete/<%= c._id %>" method="POST" data-confirm="<%= t('a.cm_confirm') %>">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <input type="hidden" name="from" value="<%= status %>">
+                                <button type="submit" class="btn-mod delete"><%= t('a.cm_delete') %></button>
+                            </form>
+                        </div>
+                    </div>
+                <% }) %>
+            </div>
+        <% } %>
+    </main>
 
+    <style>
+        .filter-tab { padding: 8px 16px; border-radius: 8px; background: var(--bg-card); color: var(--text-muted); font-size: 14px; }
+        .filter-tab.active { background: var(--primary-color); color: #fff; }
+        .comment-mod-list { display: flex; flex-direction: column; gap: 12px; }
+        .comment-mod { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px 18px; }
+        .comment-mod-meta { font-size: 14px; margin-bottom: 8px; }
+        .comment-mod-meta .muted { color: var(--text-muted); font-size: 13px; }
+        .comment-mod-meta a { color: var(--primary-color); }
+        .comment-mod-body { margin: 0 0 12px; white-space: pre-wrap; color: var(--text-main); }
+        .comment-mod-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .comment-mod-actions form { margin: 0; }
+        .btn-mod { padding: 6px 14px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; font-size: 13px; }
+        .btn-mod.approve:hover { background: #10b981; border-color: #10b981; color: #fff; }
+        .btn-mod.spam:hover { background: #f59e0b; border-color: #f59e0b; color: #fff; }
+        .btn-mod.delete:hover { background: #ef4444; border-color: #ef4444; color: #fff; }
+    </style>
 
-<style>
-.admin-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 24px;
-    flex-wrap: wrap;
-    gap: 16px;
-}
-.admin-card {
-    background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 20px;
-    overflow-x: auto;
-}
-.stats-mini {
-    display: flex;
-    gap: 12px;
-}
-.stat-badge {
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 13px;
-    font-weight: 500;
-}
-.stat-badge.pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
-.stat-badge.approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-.stat-badge.rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-.filter-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-}
-.filter-tabs a {
-    padding: 8px 16px;
-    border-radius: 8px;
-    background: var(--bg-card);
-    color: var(--text-muted);
-    transition: all 0.3s;
-}
-.filter-tabs a:hover, .filter-tabs a.active {
-    background: var(--primary-color);
-    color: #fff;
-}
-
-.bulk-actions {
-    display: flex;
-    gap: 12px;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--bg-card);
-    border-radius: 8px;
-}
-
-.status-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-.status-pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
-.status-approved { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-.status-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
-
-.comment-content {
-    max-width: 250px;
-    font-size: 13px;
-    color: var(--text-muted);
-}
-.actions {
-    display: flex;
-    gap: 6px;
-}
-.btn-sm {
-    padding: 6px 10px;
-    font-size: 12px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-.btn-success { background: #10b981; color: white; }
-.btn-warning { background: #f59e0b; color: white; }
-.btn-danger { background: #ef4444; color: white; }
-</style>
+    <script nonce="<%= cspNonce %>">
+        document.querySelectorAll('form[data-confirm]').forEach(f => {
+            f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+        });
+    </script>
 
 <%- include('../partials/footer') %>

@@ -5,32 +5,46 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'ZeroDayPlatform') %> | Siber Güvenlik Platformu
+        <%= typeof seoTitle !='undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'Crypton'
+            ) %> | Crypton
     </title>
     <meta name="description"
-        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'ZeroDayPlatform - Yazılım, Siber Güvenlik Platformu') %>">
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'Crypton — siber güvenlik üzerine yazılar, analizler ve teknik incelemeler') %>">
     <meta name="keywords"
-        content="<%= typeof seoKeywords != 'undefined' && seoKeywords ? seoKeywords : (typeof metaKeywords != 'undefined' ? metaKeywords : 'yazılım, siber güvenlik, teknoloji, zerodayplatform, zero day, platform') %>">
-    
+        content="<%= typeof seoKeywords != 'undefined' && seoKeywords ? seoKeywords : (typeof metaKeywords != 'undefined' ? metaKeywords : 'siber güvenlik, web güvenliği, ağ güvenliği, CTF, yazılım, crypton') %>">
+
     <meta property="og:type" content="<%= typeof ogType != 'undefined' ? ogType : 'website' %>">
-    <meta property="og:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : 'https://zerodayplatform.com' %>">
-    <meta property="og:title" content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'ZeroDayPlatform') %>">
-    <meta property="og:description" content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'ZeroDayPlatform - Yazılım, Siber Güvenlik Platformu') %>">
-    <meta property="og:image" content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
+    <meta property="og:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : app.url %>">
+    <meta property="og:title"
+        content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'Crypton') %>">
+    <meta property="og:description"
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'Crypton — siber güvenlik üzerine yazılar ve teknik analizler') %>">
+    <meta property="og:image"
+        content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
 
     <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : 'https://zerodayplatform.com' %>">
-    <meta property="twitter:title" content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'ZeroDayPlatform') %>">
-    <meta property="twitter:description" content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'ZeroDayPlatform - Yazılım, Siber Güvenlik Platformu') %>">
-    <meta property="twitter:image" content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
+    <meta property="twitter:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : app.url %>">
+    <meta property="twitter:title"
+        content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'Crypton') %>">
+    <meta property="twitter:description"
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'Crypton — siber güvenlik üzerine yazılar ve teknik analizler') %>">
+    <meta property="twitter:image"
+        content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
 
-    <% if (typeof canonicalUrl != 'undefined' && canonicalUrl) { %>
-    <link rel="canonical" href="<%= canonicalUrl %>">
-    <% } %>
+    <% if (typeof canonicalUrl !='undefined' && canonicalUrl) { %>
+        <link rel="canonical" href="<%= canonicalUrl %>">
+        <% } %>
 
-    <link rel="stylesheet" href="/assets/css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <link rel="stylesheet" href="/assets/css/style.css">
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap"
+                rel="stylesheet">
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+            <script src="/assets/js/theme.js"></script>
+            <style>
+                .lang-switch { display: inline-flex; gap: 4px; align-items: center; }
+                .lang-switch a { font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; color: var(--text-muted); }
+                .lang-switch a.active { color: var(--primary-color); background: rgba(16, 185, 129, 0.12); }
+            </style>
 </head>
 
 <body>
@@ -39,21 +53,34 @@
     <nav class="navbar">
         <div class="container nav-container">
             <div class="logo">
-                <a href="/">ZeroDay<span class="emphasis">Platform</span></a>
+                <a href="/">Crypton</a>
             </div>
             <div class="hamburger">
                 <i class="fas fa-bars"></i>
             </div>
             <ul class="nav-links">
-                <li><a href="/" class="<%= path === '/' ? 'active' : '' %>">Ana Sayfa</a></li>
-                <li><a href="/blog" class="<%= path.includes('/blog') ? 'active' : '' %>">Makaleler</a></li>
-                <li><a href="/about" class="<%= path === '/about' ? 'active' : '' %>">Hakkımızda</a></li>
-                <li><a href="/contact" class="<%= path === '/contact' ? 'active' : '' %>">İletişim</a></li>
+                <li><a href="/" class="<%= path === '/' ? 'active' : '' %>"><%= t('nav.home') %></a></li>
+                <li><a href="/blog" class="<%= path.includes('/blog') ? 'active' : '' %>"><%= t('nav.blog') %></a></li>
+                <li><a href="/about" class="<%= path === '/about' ? 'active' : '' %>"><%= t('nav.about') %></a></li>
+                <li><a href="/contact" class="<%= path === '/contact' ? 'active' : '' %>"><%= t('nav.contact') %></a></li>
+                <li>
+                    <button class="theme-toggle" type="button" title="<%= t('nav.theme') %>">
+                        <i class="fas fa-sun"></i>
+                    </button>
+                </li>
+                <li class="lang-switch">
+                    <% supportedLocales.forEach(function (lc) { %><a href="<%= urlForLang(lc) %>" class="<%= locale === lc ? 'active' : '' %>"><%= lc.toUpperCase() %></a><% }) %>
+                </li>
                 <% if (user) { %>
-                    <li><a href="/admin/dashboard">Panel</a></li>
-                    <li><a href="/admin/logout">Çıkış</a></li>
+                    <li><a href="/admin/dashboard"><%= t('nav.panel') %></a></li>
+                    <li>
+                        <form action="/admin/logout" method="POST" style="display:inline; margin:0;">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button type="submit" style="background:none; border:none; padding:0; cursor:pointer; font:inherit; color:inherit;"><%= t('nav.logout') %></button>
+                        </form>
+                    </li>
                 <% } else { %>
-                    <li><a href="/admin/login" id="login-btn">Giriş Yap</a></li>
+                    <li><a href="<%= adminLoginPath %>" class="nav-login-btn"><i class="fas fa-user-lock"></i> <%= t('nav.login') %></a></li>
                 <% } %>
             </ul>
         </div>

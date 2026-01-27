@@ -42,82 +42,109 @@
 
     <main class="container admin-main" style="max-width: 900px;">
         <div class="section-header">
-            <h2 class="section-title">Yeni Yazı Ekle</h2>
+            <h2 class="section-title"><%= t('a.pf_new_title') %></h2>
         </div>
 
         <div class="contact-card">
             <form action="/admin/posts/add" method="POST" enctype="multipart/form-data">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <div class="form-group">
-                    <label>Başlık</label>
+                    <label><%= t('a.pf_title') %></label>
                     <input type="text" name="title" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Özet</label>
+                    <label><%= t('a.pf_summary') %></label>
                     <textarea name="summary" rows="3" required></textarea>
                 </div>
 
-                <% if (categories && categories.length > 0) { %>
-                <div class="form-group">
-                    <label>Kategoriler</label>
-                    <div class="tags-checkbox-group">
-                        <% categories.forEach(cat => { %>
-                        <label class="tag-checkbox">
-                            <input type="checkbox" name="categories" value="<%= cat.id %>">
-                            <span class="tag-label" style="background-color: <%= cat.color %>"><%= cat.name %></span>
-                        </label>
-                        <% }); %>
-                    </div>
-                </div>
-                <% } %>
-
-                <div class="form-group">
-                    <label>Kapak Resmi</label>
-                    <input type="file" name="image" accept="image/*"
-                        style="margin-bottom: 10px; width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
-                    <input type="text" name="image" placeholder="Veya Resim URL'si">
-                </div>
-
-                <div class="form-group">
-                    <label>İçerik (Markdown)</label>
-                    <textarea id="post-content" name="content"></textarea>
-                </div>
-
-                <details class="seo-settings" style="margin-bottom: 20px;">
-                    <summary style="cursor: pointer; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; font-weight: 600;">
-                        <i class="fas fa-search"></i> SEO Ayarları (Opsiyonel)
-                    </summary>
-                    <div style="padding: 20px; background: rgba(255,255,255,0.02); border-radius: 0 0 8px 8px;">
-                        <div class="form-group">
-                            <label>SEO Başlık <small style="color: var(--text-muted);">(max 70 karakter)</small></label>
-                            <input type="text" name="seoTitle" maxlength="70" placeholder="Arama motorlarında görünecek başlık">
-                        </div>
-                        <div class="form-group">
-                            <label>SEO Açıklama <small style="color: var(--text-muted);">(max 160 karakter)</small></label>
-                            <textarea name="seoDescription" rows="2" maxlength="160" placeholder="Meta description - arama sonuçlarında görünür"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label>Anahtar Kelimeler</label>
-                            <input type="text" name="seoKeywords" placeholder="kelime1, kelime2, kelime3">
-                        </div>
-                        <div class="form-group">
-                            <label>Open Graph Görseli (Sosyal medya paylaşımları için)</label>
-                            <input type="text" name="ogImage" placeholder="https://... veya /assets/uploads/...">
+                <% if (categories && categories.length> 0) { %>
+                    <div class="form-group">
+                        <label><%= t('a.pf_categories') %></label>
+                        <div class="tags-checkbox-group">
+                            <% categories.forEach(cat=> { %>
+                                <label class="tag-checkbox">
+                                    <input type="checkbox" name="categories" value="<%= cat.id %>">
+                                    <span class="tag-label" style="background-color: <%= cat.color %>">
+                                        <%= cat.name %>
+                                    </span>
+                                </label>
+                                <% }); %>
                         </div>
                     </div>
-                </details>
+                    <% } %>
 
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Yayınla</button>
+                        <div class="form-group">
+                            <label><%= t('a.pf_tags') %> <small style="color:var(--text-muted);"><%= t('a.pf_tags_hint') %></small></label>
+                            <input type="text" name="tags" placeholder="örn: nodejs, güvenlik, mongodb">
+                        </div>
+
+                        <div class="form-group">
+                            <label><%= t('a.pf_cover') %></label>
+                            <input type="file" name="image" accept="image/*"
+                                style="margin-bottom: 10px; width: 100%; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                            <input type="text" name="image" placeholder="<%= t('a.pf_cover_url') %>">
+                        </div>
+                        <div class="form-group">
+                            <label><%= t('a.pf_alt') %></label>
+                            <input type="text" name="imageAlt" maxlength="160" placeholder="Örn: Modern bir laptop ekranı">
+                        </div>
+
+                        <div class="form-group">
+                            <label><%= t('a.pf_content') %></label>
+                            <textarea id="post-content" name="content"></textarea>
+                        </div>
+
+                        <details class="seo-settings" style="margin-bottom: 20px;">
+                            <summary
+                                style="cursor: pointer; padding: 15px; background: rgba(255,255,255,0.03); border-radius: 8px; font-weight: 600;">
+                                <i class="fas fa-search"></i> <%= t('a.pf_seo') %>
+                            </summary>
+                            <div style="padding: 20px; background: rgba(255,255,255,0.02); border-radius: 0 0 8px 8px;">
+                                <div class="form-group">
+                                    <label><%= t('a.pf_seo_title') %> <small style="color: var(--text-muted);">(max 70)</small></label>
+                                    <input type="text" name="seoTitle" maxlength="70"
+                                        placeholder="Arama motorlarında görünecek başlık">
+                                </div>
+                                <div class="form-group">
+                                    <label><%= t('a.pf_seo_desc') %> <small style="color: var(--text-muted);">(max 160)</small></label>
+                                    <textarea name="seoDescription" rows="2" maxlength="160"
+                                        placeholder="Meta description - arama sonuçlarında görünür"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label><%= t('a.pf_seo_kw') %></label>
+                                    <input type="text" name="seoKeywords" placeholder="kelime1, kelime2, kelime3">
+                                </div>
+                                <div class="form-group">
+                                    <label><%= t('a.pf_og') %></label>
+                                    <input type="text" name="ogImage"
+                                        placeholder="https://... veya /assets/uploads/...">
+                                </div>
+                            </div>
+                        </details>
+
+                        <button type="submit" class="btn btn-primary" style="width: 100%;"><%= t('a.pf_publish') %></button>
             </form>
         </div>
     </main>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
         const easyMDE = new EasyMDE({
             element: document.getElementById('post-content'),
             spellChecker: false,
             placeholder: "İçeriğinizi buraya yazın (Markdown destekler)...",
-            toolbar: ["bold", "italic", "heading", "|", "quote", "unordered-list", "ordered-list", "|", "link", "image", "|", "preview", "side-by-side", "fullscreen", "|", "guide"]
+            toolbar: [
+                "bold", "italic", "heading", "|",
+                "quote", "unordered-list", "ordered-list", "|",
+                "link", "image",
+                {
+                    name: "media-picker",
+                    action: openMediaPicker,
+                    className: "fa fa-images",
+                    title: "Medya Kütüphanesinden Seç"
+                },
+                "|", "preview", "side-by-side", "fullscreen", "|", "guide"
+            ]
         });
 
         easyMDE.codemirror.on("drop", function (editor, e) {
@@ -147,6 +174,7 @@
 
             fetch("/admin/upload-image", {
                 method: "POST",
+                headers: { "X-CSRF-Token": "<%= csrfToken %>" },
                 body: formData
             })
                 .then(response => response.json())
@@ -160,35 +188,163 @@
                     alert("Resim yüklenirken hata oluştu.");
                 });
         }
+
+        function openMediaPicker() {
+            document.getElementById('media-picker-modal').showModal();
+            loadMediaLibrary();
+        }
+
+        async function loadMediaLibrary() {
+            const grid = document.getElementById('media-picker-grid');
+            grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);">Yükleniyor...</p>';
+
+            try {
+                const res = await fetch('/admin/api/media');
+                const media = await res.json();
+
+                if (media.length === 0) {
+                    grid.innerHTML = '<p style="text-align:center;color:var(--text-muted);">Henüz medya yok.</p>';
+                    return;
+                }
+
+                grid.innerHTML = '';
+                media.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'media-picker-item';
+                    const img = document.createElement('img');
+                    img.src = item.url; img.alt = item.originalName; img.loading = 'lazy';
+                    div.appendChild(img);
+                    div.addEventListener('click', () => selectMedia(item.url, item.originalName));
+                    grid.appendChild(div);
+                });
+            } catch (err) {
+                grid.innerHTML = '<p style="color:#ef4444;">Medya yüklenirken hata oluştu.</p>';
+            }
+        }
+
+        function selectMedia(url, name) {
+            const pos = easyMDE.codemirror.getCursor();
+            easyMDE.codemirror.replaceRange(`![${name}](${url})`, pos);
+            document.getElementById('media-picker-modal').close();
+        }
+
+        document.getElementById('close-media-picker').addEventListener('click', () => {
+            document.getElementById('media-picker-modal').close();
+        });
     </script>
 
+    <!-- Media Picker Modal -->
+    <dialog id="media-picker-modal" class="modal" style="max-width: 700px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><%= t('a.media_title') %></h3>
+                <button type="button" class="modal-close" id="close-media-picker">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div id="media-picker-grid" class="media-picker-grid"></div>
+            </div>
+        </div>
+    </dialog>
+
     <style>
-    .tags-checkbox-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-    .tag-checkbox {
-        display: flex;
-        align-items: center;
-        cursor: pointer;
-    }
-    .tag-checkbox input[type="checkbox"] {
-        display: none;
-    }
-    .tag-checkbox .tag-label {
-        padding: 6px 14px;
-        border-radius: 20px;
-        color: #fff;
-        font-size: 13px;
-        font-weight: 500;
-        opacity: 0.5;
-        transition: all 0.2s;
-    }
-    .tag-checkbox input[type="checkbox"]:checked + .tag-label {
-        opacity: 1;
-        box-shadow: 0 0 0 2px #fff;
-    }
+        .modal {
+            border: none;
+            border-radius: 16px;
+            background: var(--bg-card);
+            padding: 0;
+            width: 90%;
+        }
+
+        .modal::backdrop {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .modal-content {
+            padding: 24px;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h3 {
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .modal-close {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        .media-picker-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .media-picker-item {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .media-picker-item:hover {
+            border-color: var(--primary-color);
+            transform: scale(1.05);
+        }
+
+        .media-picker-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
     </style>
 
-<%- include('../partials/footer') %>
+    <style>
+        .tags-checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .tag-checkbox {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .tag-checkbox input[type="checkbox"] {
+            display: none;
+        }
+
+        .tag-checkbox .tag-label {
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 500;
+            opacity: 0.5;
+            transition: all 0.2s;
+        }
+
+        .tag-checkbox input[type="checkbox"]:checked+.tag-label {
+            opacity: 1;
+            box-shadow: 0 0 0 2px #fff;
+        }
+    </style>
+
+    <%- include('../partials/footer') %>

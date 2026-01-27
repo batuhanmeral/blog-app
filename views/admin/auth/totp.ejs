@@ -1,0 +1,71 @@
+<%- include('../partials/header') %>
+
+<main class="container admin-main" style="max-width: 600px;">
+    <div class="section-header">
+        <h2 class="section-title"><%= t('a.tf_title') %></h2>
+    </div>
+
+    <% if (locals.flash && flash.error) { %>
+        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+            <%= flash.error %>
+        </div>
+    <% } %>
+    <% if (locals.flash && flash.success) { %>
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 12px; border-radius: 8px; margin-bottom: 16px;">
+            <%= flash.success %>
+        </div>
+    <% } %>
+
+    <% if (locals.newCodes && newCodes.length) { %>
+        <div class="contact-card" style="border:1px solid #f59e0b; margin-bottom:20px;">
+            <h3 style="margin-top:0; color:#f59e0b;"><%= t('a.tf_backup_title') %></h3>
+            <p style="color: var(--text-muted); font-size: 14px;"><%= t('a.tf_backup_desc') %></p>
+            <div style="display:grid; grid-template-columns: repeat(2, 1fr); gap:8px; font-family:monospace; font-size:16px; margin:16px 0;">
+                <% newCodes.forEach(c => { %>
+                    <span style="background:rgba(255,255,255,0.05); padding:8px 12px; border-radius:6px; text-align:center; letter-spacing:2px;"><%= c %></span>
+                <% }); %>
+            </div>
+        </div>
+    <% } %>
+
+    <div class="contact-card">
+        <% if (enabled) { %>
+            <p><%= t('a.tf_enabled') %></p>
+            <p style="color: var(--text-muted); font-size: 14px;"><%= t('a.tf_remaining') %> <strong><%= locals.backupCount || 0 %></strong></p>
+
+            <form action="/admin/2fa/backup-codes" method="POST" data-confirm="<%= t('a.tf_regen_confirm') %>" style="margin: 12px 0;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-outline"><%= t('a.tf_regen') %></button>
+            </form>
+
+            <form action="/admin/2fa/disable" method="POST" data-confirm="<%= t('a.tf_disable_confirm') %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button type="submit" class="btn btn-outline" style="color:#ef4444;border-color:#ef4444;"><%= t('a.tf_disable') %></button>
+            </form>
+        <% } else { %>
+            <p><%= t('a.tf_scan') %></p>
+            <div style="text-align:center; margin: 20px 0;">
+                <img src="<%= qrDataUrl %>" alt="2FA QR" style="max-width: 240px;">
+            </div>
+            <p style="font-size: 13px; color: var(--text-muted); word-break: break-all;">
+<%= t('a.tf_manual') %> <code><%= base32 %></code>
+            </p>
+            <form action="/admin/2fa/enable" method="POST" style="margin-top: 20px;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <div class="form-group">
+                    <label><%= t('a.tf_code') %></label>
+                    <input type="text" name="token" inputmode="numeric" pattern="[0-9]{6,8}" placeholder="<%= t('login.code_ph') %>" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;"><%= t('a.tf_enable') %></button>
+            </form>
+        <% } %>
+    </div>
+</main>
+
+<script nonce="<%= cspNonce %>">
+document.querySelectorAll('form[data-confirm]').forEach(f => {
+    f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+});
+</script>
+
+<%- include('../partials/footer') %>

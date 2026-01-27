@@ -1,224 +1,253 @@
 const Post = require('../../models/Post');
-const User = require('../../models/User');
 const Category = require('../../models/Category');
+const Comment = require('../../models/Comment');
+const Visit = require('../../models/Visit');
 const AuditLog = require('../../models/AuditLog');
+const logger = require('../../utils/logger');
+const { sanitizePostMarkdown, sanitizeImageUrl } = require('../../utils/sanitize');
+const { canMutate } = require('../../middleware/authorize');
+const { removeUploadedFile } = require('../../middleware/upload');
+
+function denyOwnership(res) {
+    return res.status(403).render('errors/403', {
+        title: 'Yetkisiz',
+        message: 'Bu yazı üzerinde işlem yapma yetkiniz yok.'
+    });
+}
+
+const ALLOWED_STATUS = ['draft', 'published'];
+
+function pickStatus(value) {
+    return ALLOWED_STATUS.includes(value) ? value : 'published';
+}
+
+function normalizeCategories(value) {
+    if (!value) return [];
+    const arr = Array.isArray(value) ? value : [value];
+    return arr.filter(id => /^[a-f0-9]{24}$/i.test(String(id)));
+}
+
+// "nodejs, Güvenlik" → ['nodejs', 'güvenlik']; trim+lowercase, tekille, sınırla
+function normalizeTags(value) {
+    if (!value) return [];
+    const raw = Array.isArray(value) ? value : String(value).split(',');
+    const seen = new Set();
+    const out = [];
+    for (let t of raw) {
+        t = String(t).trim().toLowerCase().replace(/\s+/g, ' ').slice(0, 30);
+        if (t && !seen.has(t)) { seen.add(t); out.push(t); }
+        if (out.length >= 15) break;
+    }
+    return out;
+}
 
 exports.getPosts = async (req, res) => {
     try {
-        let whereClause = {};
-        if (req.session.user.role !== 'admin') {
-            whereClause = { userId: req.session.user.id };
+        const query = {};
+        if (req.query.status && ALLOWED_STATUS.includes(req.query.status)) {
+            query.status = req.query.status;
         }
-        
-        if (req.query.status) {
-            whereClause.status = req.query.status;
+        if (req.query.category && /^[a-f0-9]{24}$/i.test(req.query.category)) {
+            query.categories = req.query.category;
         }
-        
-        const posts = await Post.findAll({
-            where: whereClause,
-            include: [User, Category],
-            order: [['date', 'DESC']]
+        // author yalnızca kendi yazılarını listeler
+        if (req.session.user.role === 'author') {
+            query.author = req.session.user.id;
+        }
+
+        const [posts, categories] = await Promise.all([
+            Post.find(query).populate('categories', 'name color').sort({ createdAt: -1 }).lean(),
+            Category.find({ archived: { $ne: true } }).sort({ name: 1 }).lean()
+        ]);
+
+        res.render('admin/posts/list', {
+            title: 'Yazılar',
+            posts,
+            categories,
+            user: req.session.user
         });
-        res.render('admin/posts/list', { title: 'Makaleler', posts, user: req.session.user });
     } catch (err) {
-        console.log(err);
+        logger.error({ err }, 'getPosts');
         res.status(500).send('Sunucu Hatası');
     }
 };
 
 exports.getAddPostPage = async (req, res) => {
     try {
-        const categories = await Category.findAll({ order: [['name', 'ASC']] });
-        res.render('admin/posts/add', { title: 'Yeni Yazı Ekle', categories });
+        const categories = await Category.find({ archived: { $ne: true } }).sort({ name: 1 }).lean();
+        res.render('admin/posts/add', { title: 'Yeni Yazı', categories });
     } catch (err) {
-        console.log(err);
+        logger.error({ err }, 'getAddPostPage');
         res.status(500).send('Hata');
     }
 };
 
 exports.addPost = async (req, res) => {
     try {
-        let imagePath = req.body.image;
+        const title = req.body.title.trim();
+        const content = sanitizePostMarkdown(req.body.content);
+
+        let imagePath;
         if (req.file) {
-            imagePath = '/assets/uploads/' + req.file.filename;
+            imagePath = req.file.processedUrl || ('/assets/uploads/' + req.file.filename);
+        } else {
+            imagePath = sanitizeImageUrl(req.body.image);
         }
 
-        const status = req.session.user.role === 'admin' ? 'published' : 'pending';
-        
-        const readTime = Post.calculateReadTime(req.body.content);
-        
-        const slug = Post.generateSlug(req.body.title) + '-' + Date.now();
+        const readTime = Post.calculateReadTime(content);
+        const slug = Post.generateSlug(title) + '-' + Date.now();
 
         const post = await Post.create({
-            title: req.body.title,
-            slug: slug,
-            content: req.body.content,
+            title,
+            slug,
+            content,
             image: imagePath,
-            summary: req.body.summary,
-            seoTitle: req.body.seoTitle || null,
-            seoDescription: req.body.seoDescription || null,
-            seoKeywords: req.body.seoKeywords || null,
-            ogImage: req.body.ogImage || null,
-            readTime: readTime,
-            userId: req.session.user.id,
-            status: status
+            imageAlt: (req.body.imageAlt || '').trim(),
+            summary: (req.body.summary || '').trim() || null,
+            seoTitle: (req.body.seoTitle || '').trim() || null,
+            seoDescription: (req.body.seoDescription || '').trim() || null,
+            seoKeywords: (req.body.seoKeywords || '').trim() || null,
+            ogImage: sanitizeImageUrl(req.body.ogImage),
+            readTime,
+            categories: normalizeCategories(req.body.categories),
+            tags: normalizeTags(req.body.tags),
+            status: pickStatus(req.body.status),
+            author: req.session.user.id
         });
-        
-        if (req.body.categories) {
-            const categoryIds = Array.isArray(req.body.categories) ? req.body.categories : [req.body.categories];
-            const categories = await Category.findAll({ where: { id: categoryIds } });
-            await post.setCategories(categories);
-        }
-        
-        await AuditLog.log(req, 'CREATE_POST', {
-            type: 'Post',
-            id: post.id,
-            title: post.title
-        });
-        
+
+        await AuditLog.log(req, 'CREATE_POST', { type: 'Post', id: post._id, title: post.title });
         res.redirect('/admin/posts');
     } catch (err) {
-        console.log(err);
+        logger.error({ err }, 'addPost');
         res.status(500).send('Kayıt Hatası');
     }
 };
 
 exports.getEditPostPage = async (req, res) => {
     try {
-        const post = await Post.findByPk(req.params.id, { include: Category });
-        if (!post) {
-            return res.status(404).send('Yazı bulunamadı');
-        }
-        if (req.session.user.role !== 'admin' && post.userId !== req.session.user.id) {
-            return res.status(403).send('Yetersiz yetki');
-        }
-        const categories = await Category.findAll({ order: [['name', 'ASC']] });
-        const postCategoryIds = post.Categories ? post.Categories.map(c => c.id) : [];
+        const post = await Post.findById(req.params.id).populate('categories').lean();
+        if (!post) return res.status(404).send('Yazı bulunamadı');
+        if (!canMutate(post.author, req.session.user)) return denyOwnership(res);
+
+        const categories = await Category.find({ archived: { $ne: true } }).sort({ name: 1 }).lean();
+        const postCategoryIds = (post.categories || []).map(c => c._id.toString());
+
         res.render('admin/posts/edit', { title: 'Yazıyı Düzenle', post, categories, postCategoryIds });
     } catch (err) {
-        console.log(err);
+        logger.error({ err }, 'getEditPostPage');
         res.status(500).send('Hata');
     }
 };
 
 exports.updatePost = async (req, res) => {
     try {
-        const post = await Post.findByPk(req.params.id);
-        if (!post) {
-            return res.status(404).send('Yazı bulunamadı');
-        }
-        const isOwner = post.userId === req.session.user.id;
-        const isAdmin = req.session.user.role === 'admin';
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).send('Yazı bulunamadı');
+        if (!canMutate(post.author, req.session.user)) return denyOwnership(res);
 
-        if (!isAdmin && !isOwner) {
-            return res.status(403).send('Yetersiz yetki: Bu yazıyı düzenleme hakkınız yok.');
-        }
-        
-        const readTime = Post.calculateReadTime(req.body.content);
+        const title = req.body.title.trim();
+        const content = sanitizePostMarkdown(req.body.content);
+        const readTime = Post.calculateReadTime(content);
 
         const updateData = {
-            title: req.body.title,
-            content: req.body.content,
-            summary: req.body.summary,
-            seoTitle: req.body.seoTitle || null,
-            seoDescription: req.body.seoDescription || null,
-            seoKeywords: req.body.seoKeywords || null,
-            ogImage: req.body.ogImage || null,
-            readTime: readTime,
-            date: Date.now()
+            title,
+            content,
+            imageAlt: (req.body.imageAlt || '').trim(),
+            summary: (req.body.summary || '').trim() || null,
+            seoTitle: (req.body.seoTitle || '').trim() || null,
+            seoDescription: (req.body.seoDescription || '').trim() || null,
+            seoKeywords: (req.body.seoKeywords || '').trim() || null,
+            ogImage: sanitizeImageUrl(req.body.ogImage),
+            readTime,
+            categories: normalizeCategories(req.body.categories),
+            tags: normalizeTags(req.body.tags),
+            status: pickStatus(req.body.status)
         };
 
         if (req.file) {
-            updateData.image = '/assets/uploads/' + req.file.filename;
+            updateData.image = req.file.processedUrl || ('/assets/uploads/' + req.file.filename);
+            // yeni görsel geldiyse eski yerel görseli diskten temizle
+            if (post.image && post.image !== updateData.image) removeUploadedFile(post.image);
         } else if (req.body.image) {
-            updateData.image = req.body.image;
+            const safe = sanitizeImageUrl(req.body.image);
+            if (safe) updateData.image = safe;
         }
 
-        await Post.update(updateData, { where: { id: req.params.id } });
-        
-        const updatedPost = await Post.findByPk(req.params.id);
-        if (req.body.categories) {
-            const categoryIds = Array.isArray(req.body.categories) ? req.body.categories : [req.body.categories];
-            const categories = await Category.findAll({ where: { id: categoryIds } });
-            await updatedPost.setCategories(categories);
-        } else {
-            await updatedPost.setCategories([]);
-        }
-        
-        await AuditLog.log(req, 'UPDATE_POST', {
-            type: 'Post',
-            id: post.id,
-            title: post.title
-        });
-        
+        await Post.findByIdAndUpdate(req.params.id, updateData);
+        await AuditLog.log(req, 'UPDATE_POST', { type: 'Post', id: post._id, title: post.title });
         res.redirect('/admin/posts');
     } catch (err) {
-        console.log(err);
+        logger.error({ err }, 'updatePost');
         res.status(500).send('Güncelleme Hatası');
     }
 };
 
 exports.deletePost = async (req, res) => {
     try {
-        const post = await Post.findByPk(req.params.id);
-        if (!post) {
-            return res.status(404).send('Yazı bulunamadı');
-        }
-        const isOwner = post.userId === req.session.user.id;
-        const isAdmin = req.session.user.role === 'admin';
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).send('Yazı bulunamadı');
+        if (!canMutate(post.author, req.session.user)) return denyOwnership(res);
 
-        if (!isAdmin && !isOwner) {
-            return res.status(403).send('Yetersiz yetki: Bu yazıyı silme hakkınız yok.');
-        }
-
-        const postTitle = post.title;
-        const postId = post.id;
-        
-        await Post.destroy({ where: { id: req.params.id } });
-        
-        await AuditLog.log(req, 'DELETE_POST', {
-            type: 'Post',
-            id: postId,
-            title: postTitle
-        });
-        
+        await Post.findByIdAndDelete(req.params.id);
+        // Bağımlı kayıtları temizle (yorumlar + ziyaret istatistikleri yetim kalmasın)
+        await Promise.all([
+            Comment.deleteMany({ post: post._id }),
+            Visit.deleteMany({ postId: post._id })
+        ]);
+        removeUploadedFile(post.image);
+        await AuditLog.log(req, 'DELETE_POST', { type: 'Post', id: post._id, title: post.title });
         res.redirect('/admin/posts');
     } catch (err) {
-        console.log(err);
+        logger.error({ err }, 'deletePost');
         res.status(500).send('Silme Hatası');
+    }
+};
+
+exports.bulkPosts = async (req, res) => {
+    try {
+        const ids = req.body.ids;
+        const action = req.body.action;
+
+        // author yalnızca kendi yazıları üzerinde toplu işlem yapabilir
+        const scope = { _id: { $in: ids } };
+        if (req.session.user.role === 'author') scope.author = req.session.user.id;
+
+        let affected = 0;
+        if (action === 'delete') {
+            const toDelete = await Post.find(scope).select('_id image').lean();
+            const delIds = toDelete.map(p => p._id);
+            const result = await Post.deleteMany(scope);
+            affected = result.deletedCount || 0;
+            // Bağımlı kayıtları temizle (yorumlar + ziyaret istatistikleri yetim kalmasın)
+            await Promise.all([
+                Comment.deleteMany({ post: { $in: delIds } }),
+                Visit.deleteMany({ postId: { $in: delIds } })
+            ]);
+            toDelete.forEach(p => removeUploadedFile(p.image));
+            await AuditLog.log(req, 'DELETE_POST', { type: 'Post', title: `Bulk ${affected} silindi` });
+        } else if (action === 'publish') {
+            const result = await Post.updateMany(scope, { status: 'published' });
+            affected = result.modifiedCount || 0;
+            await AuditLog.log(req, 'UPDATE_POST', { type: 'Post', title: `Bulk ${affected} yayına alındı` });
+        } else if (action === 'draft') {
+            const result = await Post.updateMany(scope, { status: 'draft' });
+            affected = result.modifiedCount || 0;
+            await AuditLog.log(req, 'UPDATE_POST', { type: 'Post', title: `Bulk ${affected} taslağa alındı` });
+        }
+
+        req.flash('success', `${affected} yazı için işlem tamamlandı.`);
+        res.redirect('/admin/posts');
+    } catch (err) {
+        logger.error({ err }, 'bulkPosts');
+        res.status(500).send('Hata');
     }
 };
 
 exports.uploadImage = (req, res) => {
     if (req.file) {
-        res.json({ location: '/assets/uploads/' + req.file.filename });
+        const url = req.file.processedUrl || ('/assets/uploads/' + req.file.filename);
+        res.json({ location: url });
     } else {
         res.status(400).json({ error: 'Dosya yüklenemedi' });
-    }
-};
-
-exports.approvePost = async (req, res) => {
-    try {
-        if (req.session.user.role !== 'admin') {
-            return res.status(403).send('Yetersiz yetki');
-        }
-        await Post.update({ status: 'published' }, { where: { id: req.params.id } });
-        res.redirect('/admin/posts?status=pending');
-    } catch (err) {
-        console.log(err);
-        res.status(500).send('Hata');
-    }
-};
-
-exports.rejectPost = async (req, res) => {
-    try {
-        if (req.session.user.role !== 'admin') {
-            return res.status(403).send('Yetersiz yetki');
-        }
-        await Post.update({ status: 'rejected' }, { where: { id: req.params.id } });
-        res.redirect('/admin/posts?status=pending');
-    } catch (err) {
-        console.log(err);
-        res.status(500).send('Hata');
     }
 };

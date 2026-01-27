@@ -2,27 +2,28 @@
     <div class="container">
         <div class="footer-grid">
             <div class="footer-about">
-                <h3>ZeroDay<span class="text-primary">Platform</span></h3>
-                <p>Siber güvenlik üzerine makaleler sunan bilgi platformu.</p>
+                <h3>Crypton</h3>
+                <p><%= t('footer.tagline') %></p>
             </div>
             <div class="footer-links">
-                <h4>Hızlı Linkler</h4>
+                <h4><%= t('footer.quicklinks') %></h4>
                 <ul>
-                    <li><a href="/">Ana Sayfa</a></li>
-                    <li><a href="/about">Hakkımızda</a></li>
-                    <li><a href="/contact">İletişim</a></li>
+                    <li><a href="/"><%= t('nav.home') %></a></li>
+                    <li><a href="/about"><%= t('nav.about') %></a></li>
+                    <li><a href="/contact"><%= t('nav.contact') %></a></li>
                 </ul>
             </div>
             <div class="footer-social">
-                <h4>Takip Et</h4>
+                <h4><%= t('footer.follow') %></h4>
                 <div class="social-icons">
                     <a href="https://github.com/batuhanmeral" target="_blank"><i class="fab fa-github"></i></a>
-                    <a href="https://www.linkedin.com/in/batuhanmeral/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+                    <a href="https://www.linkedin.com/in/batuhanmeral/" target="_blank"><i
+                            class="fab fa-linkedin-in"></i></a>
                 </div>
             </div>
         </div>
         <div class="footer-bottom">
-            <p>&copy; 2025 ZeroDayPlatform. Tüm hakları saklıdır.</p>
+            <p>&copy; <%= new Date().getFullYear() %> Crypton. <%= t('footer.rights') %></p>
         </div>
     </div>
 </footer>

@@ -2,21 +2,22 @@
 
 <main class="container admin-main">
     <div class="admin-header">
-        <h1>Kategoriyi Düzenle</h1>
+        <h1><%= t('a.cat_edit_title') %></h1>
         <a href="/admin/categories" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Geri
+            <i class="fas fa-arrow-left"></i> <%= t('a.back') %>
         </a>
     </div>
 
     <div class="admin-card">
         <form action="/admin/categories/edit/<%= category.id %>" method="POST" class="admin-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
-                <label for="name">Kategori Adı</label>
+                <label for="name"><%= t('a.cat_name') %></label>
                 <input type="text" id="name" name="name" value="<%= category.name %>" required>
             </div>
             
             <div class="form-group">
-                <label for="color">Renk</label>
+                <label for="color"><%= t('a.cat_color') %></label>
                 <div class="color-picker-wrapper">
                     <input type="color" id="color" name="color" value="<%= category.color %>">
                     <span class="color-preview" id="colorPreview"><%= category.color %></span>
@@ -24,18 +25,18 @@
             </div>
             
             <div class="form-group">
-                <label>Önizleme</label>
+                <label><%= t('a.cat_preview') %></label>
                 <span class="tag-badge" id="tagPreview" style="background-color: <%= category.color %>"><%= category.name %></span>
             </div>
-            
+
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Güncelle
+                <i class="fas fa-save"></i> <%= t('a.update') %>
             </button>
         </form>
     </div>
 </main>
 
-<script>
+<script nonce="<%= cspNonce %>">
 document.getElementById('color').addEventListener('input', function() {
     document.getElementById('colorPreview').textContent = this.value;
     document.getElementById('tagPreview').style.backgroundColor = this.value;

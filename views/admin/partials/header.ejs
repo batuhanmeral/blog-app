@@ -5,11 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= typeof title !='undefined' ? title : 'Admin Paneli' %> | Batuhan Meral
+        <%= typeof title !='undefined' ? title : 'Admin Paneli' %> | Crypton
     </title>
     <link rel="stylesheet" href="/assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/assets/js/theme.js"></script>
     <style>
         .admin-nav {
             background: rgba(0, 0, 0, 0.9);
@@ -25,7 +26,9 @@
 
         .admin-links {
             display: flex;
-            gap: 20px;
+            gap: 16px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
         .admin-links a {
@@ -75,12 +78,14 @@
         }
 
         .action-btn {
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 13px;
             margin-right: 5px;
             text-decoration: none;
             display: inline-block;
+            min-height: 44px;
+            min-width: 44px;
         }
 
         .btn-edit {
@@ -94,6 +99,70 @@
             border: none;
             cursor: pointer;
         }
+
+        .admin-hamburger {
+            display: none;
+            background: transparent;
+            border: none;
+            color: var(--text-main);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .lang-switch { display: inline-flex; gap: 4px; align-items: center; }
+        .lang-switch a { font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; color: var(--text-muted); }
+        .lang-switch a.active { color: var(--primary-color); background: rgba(16, 185, 129, 0.12); }
+
+        /* Responsive Admin */
+        @media (max-width: 1024px) {
+            .admin-links {
+                gap: 12px;
+            }
+
+            .admin-links a {
+                font-size: 13px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .admin-hamburger {
+                display: block;
+            }
+
+            .admin-links {
+                position: fixed;
+                top: 60px;
+                left: 0;
+                right: 0;
+                background: var(--bg-body);
+                flex-direction: column;
+                padding: 20px;
+                gap: 16px;
+                border-bottom: 1px solid var(--border);
+                display: none;
+                z-index: 999;
+            }
+
+            .admin-links.active {
+                display: flex;
+            }
+
+            .admin-links a {
+                font-size: 16px;
+                padding: 12px 0;
+            }
+
+            .admin-table th,
+            .admin-table td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+
+            .action-btn {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+        }
     </style>
 </head>
 
@@ -102,26 +171,38 @@
     <nav class="admin-nav">
         <div class="container nav-container">
             <div class="logo">
-                <a href="/admin/dashboard">Admin<span class="emphasis">Panel</span></a>
+                <a href="/admin/dashboard">Crypton</a>
             </div>
+            <button class="admin-hamburger" id="admin-hamburger" type="button">
+                <i class="fas fa-bars"></i>
+            </button>
             <div class="admin-links">
-                <a href="/admin/dashboard" class="<%= path === '/admin/dashboard' ? 'active' : '' %>">Dashboard</a>
-
-                <a href="/admin/posts" class="<%= path.includes('/admin/posts') ? 'active' : '' %>">Makaleler</a>
-
-                <% if (user.role==='admin' ) { %>
-                    <a href="/admin/categories" class="<%= path.includes('/admin/categories') ? 'active' : '' %>">Kategoriler</a>
-                    <a href="/admin/comments" class="<%= path.includes('/admin/comments') ? 'active' : '' %>">Yorumlar</a>
-                    <a href="/admin/users" class="<%= path.includes('/admin/users') ? 'active' : '' %>">Kullanıcılar</a>
-                    <a href="/admin/messages"
-                        class="<%= path.includes('/admin/messages') ? 'active' : '' %>">Mesajlar</a>
-                    <a href="/admin/audit" class="<%= path.includes('/admin/audit') ? 'active' : '' %>">Audit Log</a>
-                    <% } %>
-
-                        <a href="/admin/profile" class="<%= path === '/admin/profile' ? 'active' : '' %>">Profilim</a>
-
-                        <a href="/" target="_blank">Siteyi Görüntüle <i class="fas fa-external-link-alt"></i></a>
-                        <a href="/admin/logout" style="color: #ef4444;">Çıkış</a>
+                <a href="/admin/dashboard" class="<%= path === '/admin/dashboard' ? 'active' : '' %>"><%= t('a.dashboard') %></a>
+                <a href="/admin/posts" class="<%= path.includes('/admin/posts') ? 'active' : '' %>"><%= t('a.posts') %></a>
+                <a href="/admin/categories"
+                    class="<%= path.includes('/admin/categories') ? 'active' : '' %>"><%= t('a.categories') %></a>
+                <a href="/admin/media" class="<%= path.includes('/admin/media') ? 'active' : '' %>"><%= t('a.media') %></a>
+                <% if (user && (user.role === 'admin' || user.role === 'editor')) { %>
+                <a href="/admin/messages" class="<%= path.includes('/admin/messages') ? 'active' : '' %>"><%= t('a.messages') %></a>
+                <a href="/admin/comments" class="<%= path.includes('/admin/comments') ? 'active' : '' %>"><%= t('a.comments') %></a>
+                <% } %>
+                <% if (user && user.role === 'admin') { %>
+                <a href="/admin/users" class="<%= path.includes('/admin/users') ? 'active' : '' %>"><%= t('a.users') %></a>
+                <a href="/admin/audit" class="<%= path.includes('/admin/audit') ? 'active' : '' %>"><%= t('a.audit') %></a>
+                <% } %>
+                <a href="/admin/2fa" class="<%= path === '/admin/2fa' ? 'active' : '' %>"><%= t('a.twofa') %></a>
+                <a href="/admin/profile" class="<%= path === '/admin/profile' ? 'active' : '' %>"><%= t('a.profile') %></a>
+                <span class="lang-switch">
+                    <% supportedLocales.forEach(function (lc) { %><a href="<%= urlForLang(lc) %>" class="<%= locale === lc ? 'active' : '' %>"><%= lc.toUpperCase() %></a><% }) %>
+                </span>
+                <button class="theme-toggle" id="theme-toggle-btn" type="button" title="<%= t('nav.theme') %>">
+                    <i class="fas fa-sun"></i>
+                </button>
+                <a href="/" target="_blank"><%= t('a.viewsite') %> <i class="fas fa-external-link-alt"></i></a>
+                <form action="/admin/logout" method="POST" style="display:inline; margin:0;">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button type="submit" style="background:none; border:none; padding:0; color:#ef4444; cursor:pointer; font:inherit;"><%= t('a.logout') %></button>
+                </form>
             </div>
         </div>
     </nav>

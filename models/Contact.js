@@ -1,23 +1,33 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Contact = sequelize.define('Contact', {
+const contactSchema = new mongoose.Schema({
     name: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 2,
+        maxlength: 100
     },
     email: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: String,
+        required: true,
+        trim: true,
+        lowercase: true,
+        maxlength: 254,
+        match: [/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/, 'Geçerli bir e-posta adresi giriniz.']
     },
     message: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 5000
     },
-    date: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
+    isRead: {
+        type: Boolean,
+        default: false
     }
+}, {
+    timestamps: true
 });
 
-module.exports = Contact;
+module.exports = mongoose.model('Contact', contactSchema);

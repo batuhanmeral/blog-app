@@ -1,39 +1,23 @@
 <%- include('../partials/header') %>
 
-    <main class="container admin-main" style="max-width: 600px;">
-        <div class="section-header">
-            <h2 class="section-title">Yeni Kullanıcı Ekle</h2>
-        </div>
+<main class="container admin-main" style="max-width:600px;">
+    <div class="section-header"><h2 class="section-title"><%= t('a.u_new_title') %></h2></div>
 
-        <div class="contact-card">
-            <form action="/admin/users/add" method="POST">
-                <div class="form-group">
-                    <label>Ad Soyad</label>
-                    <input type="text" name="name" required placeholder="Ad Soyad">
-                </div>
-
-                <div class="form-group">
-                    <label>Kullanıcı Adı</label>
-                    <input type="text" name="username" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Şifre</label>
-                    <input type="password" name="password" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Rol</label>
-                    <select name="role"
-                        style="width: 100%; padding: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); color: white; border-radius: 8px;">
-                        <option value="writer">Yazıcı (Sadece Makale)</option>
-                        <option value="admin">Admin (Tam Yetki)</option>
-                    </select>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Ekle</button>
-            </form>
-        </div>
-    </main>
+    <div class="contact-card">
+        <form action="/admin/users/add" method="POST">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="form-group"><label><%= t('a.u_username') %></label><input type="text" name="username" required></div>
+            <div class="form-group"><label><%= t('a.u_name') %></label><input type="text" name="name" required></div>
+            <div class="form-group"><label><%= t('a.u_password') %></label><input type="password" name="password" required></div>
+            <div class="form-group">
+                <label><%= t('a.u_role') %></label>
+                <select name="role" required>
+                    <% roles.forEach(r => { %><option value="<%= r %>"><%= r %></option><% }); %>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;"><%= t('a.create') %></button>
+        </form>
+    </div>
+</main>
 
 <%- include('../partials/footer') %>

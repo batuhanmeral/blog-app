@@ -1,16 +1,10 @@
+const config = require('../config');
+
+const loginUrl = () => `/admin/${config.admin.loginPath || 'login'}`;
+
 const isAuthenticated = (req, res, next) => {
     if (!req.session.user) {
-        return res.redirect('/admin/login');
-    }
-    next();
-};
-
-const isAdmin = (req, res, next) => {
-    if (!req.session.user || req.session.user.role !== 'admin') {
-        return res.status(403).render('errors/403', { 
-            title: 'Erişim Engellendi',
-            message: 'Bu işlem için admin yetkisi gereklidir.'
-        });
+        return res.redirect(loginUrl());
     }
     next();
 };
@@ -22,8 +16,17 @@ const isGuest = (req, res, next) => {
     next();
 };
 
+// Parola değiştirmesi zorunlu kullanıcıyı profil sayfasına kilitler
+// (yalnızca profil ve çıkış erişilebilir kalır).
+const enforcePasswordChange = (req, res, next) => {
+    if (!req.session.user || !req.session.user.mustChangePassword) return next();
+    if (req.path === '/profile' || req.path === '/logout') return next();
+    if (req.flash) req.flash('error', 'Devam etmeden önce parolanızı değiştirmelisiniz.');
+    return res.redirect('/admin/profile');
+};
+
 module.exports = {
     isAuthenticated,
-    isAdmin,
-    isGuest
+    isGuest,
+    enforcePasswordChange
 };

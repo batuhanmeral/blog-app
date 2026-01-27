@@ -2,33 +2,44 @@
 
     <main class="container" style="margin-top: 120px; max-width: 800px;">
         <div class="section-header">
-            <h2 class="section-title glitch" data-text="İletişime Geç">İletişime Geç</h2>
-            <p class="section-subtitle">Projeleriniz veya sorularınız için bana yazabilirsiniz.</p>
+            <h2 class="section-title glitch" data-text="<%= t('contact.title') %>"><%= t('contact.title') %></h2>
+            <p class="section-subtitle"><%= t('contact.subtitle') %></p>
         </div>
 
         <div class="contact-card">
-            <% if (locals.success) { %>
+            <% if (locals.flash && flash.success) { %>
                 <div
                     style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
-                    <%= success %>
+                    <%= flash.success %>
                 </div>
-                <% } %>
+            <% } %>
+            <% if (locals.flash && flash.error) { %>
+                <div
+                    style="background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; color: #ef4444; padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center;">
+                    <%= flash.error %>
+                </div>
+            <% } %>
 
                     <form action="/contact" method="POST">
-                        <div class="form-group">
-                            <label>Adınız Soyadınız</label>
-                            <input type="text" name="name" placeholder="Örn: Ahmet Yılmaz" required>
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <div style="position:absolute;left:-9999px;top:-9999px;" aria-hidden="true">
+                            <label>Website (boş bırakın)</label>
+                            <input type="text" name="website" tabindex="-1" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label>E-posta Adresiniz</label>
-                            <input type="email" name="email" placeholder="ornek@email.com" required>
+                            <label><%= t('contact.name') %></label>
+                            <input type="text" name="name" placeholder="<%= t('contact.name_ph') %>" required>
                         </div>
                         <div class="form-group">
-                            <label>Mesajınız</label>
-                            <textarea name="message" rows="5" placeholder="Mesajınızı buraya yazın..."
+                            <label><%= t('contact.email') %></label>
+                            <input type="email" name="email" placeholder="<%= t('contact.email_ph') %>" required>
+                        </div>
+                        <div class="form-group">
+                            <label><%= t('contact.message') %></label>
+                            <textarea name="message" rows="5" placeholder="<%= t('contact.message_ph') %>"
                                 required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary" style="width: 100%;">Gönder</button>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;"><%= t('contact.send') %></button>
                     </form>
         </div>
     </main>

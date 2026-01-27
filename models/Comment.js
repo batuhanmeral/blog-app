@@ -1,35 +1,45 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Comment = sequelize.define('Comment', {
+const commentSchema = new mongoose.Schema({
+    post: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Post',
+        required: true,
+        index: true
+    },
     name: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: String,
+        required: true,
+        trim: true,
+        minlength: 2,
+        maxlength: 80
     },
     email: {
-        type: Sequelize.STRING,
-        allowNull: true
+        type: String,
+        trim: true,
+        lowercase: true,
+        maxlength: 254,
+        default: ''
     },
-    content: {
-        type: Sequelize.TEXT,
-        allowNull: false
-    },
-    postId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Posts',
-            key: 'id'
-        }
+    body: {
+        type: String,
+        required: true,
+        minlength: 5,
+        maxlength: 3000
     },
     status: {
-        type: Sequelize.ENUM('pending', 'approved', 'rejected'),
-        defaultValue: 'pending'
+        type: String,
+        enum: ['pending', 'approved', 'spam'],
+        default: 'pending',
+        index: true
     },
-    date: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
-    }
+    ipHash: String,
+    userAgent: String
+}, {
+    timestamps: true
 });
 
-module.exports = Comment;
+commentSchema.index({ post: 1, status: 1, createdAt: -1 });
+commentSchema.index({ status: 1, createdAt: -1 });
+
+module.exports = mongoose.model('Comment', commentSchema);

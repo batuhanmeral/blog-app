@@ -1,21 +1,25 @@
 <%- include('../partials/header') %>
 
+<% const canManageCats = user && (user.role === 'admin' || user.role === 'editor'); %>
+
 <main class="container admin-main">
     <div class="admin-header">
-        <h1>Kategoriler</h1>
+        <h1><%= t('a.cat_title') %></h1>
+        <% if (canManageCats) { %>
         <a href="/admin/categories/add" class="btn btn-primary">
-            <i class="fas fa-plus"></i> Yeni Kategori
+            <i class="fas fa-plus"></i> <%= t('a.cat_new') %>
         </a>
+        <% } %>
     </div>
 
     <div class="admin-card">
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Renk</th>
-                    <th>Kategori Adı</th>
-                    <th>Slug</th>
-                    <th>İşlemler</th>
+                    <th><%= t('a.cat_color') %></th>
+                    <th><%= t('a.cat_name') %></th>
+                    <th><%= t('a.cat_slug') %></th>
+                    <% if (canManageCats) { %><th><%= t('a.actions') %></th><% } %>
                 </tr>
             </thead>
             <tbody>
@@ -31,21 +35,24 @@
                             </span>
                         </td>
                         <td><code><%= category.slug %></code></td>
+                        <% if (canManageCats) { %>
                         <td class="actions">
                             <a href="/admin/categories/edit/<%= category.id %>" class="btn btn-sm btn-edit">
                                 <i class="fas fa-edit"></i>
                             </a>
-                            <form action="/admin/categories/delete/<%= category.id %>" method="POST" style="display:inline;">
-                                <button type="submit" class="btn btn-sm btn-delete" onclick="return confirm('Bu kategoriyi silmek istediğinize emin misiniz?')">
+                            <form action="/admin/categories/delete/<%= category.id %>" method="POST" style="display:inline;" data-confirm="<%= t('a.cat_confirm') %>">
+                                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                                <button type="submit" class="btn btn-sm btn-delete">
                                     <i class="fas fa-trash"></i>
                                 </button>
                             </form>
                         </td>
+                        <% } %>
                     </tr>
                     <% }); %>
                 <% } else { %>
                     <tr>
-                        <td colspan="4" class="text-center">Henüz kategori eklenmemiş.</td>
+                        <td colspan="<%= canManageCats ? 4 : 3 %>" class="text-center"><%= t('a.cat_empty') %></td>
                     </tr>
                 <% } %>
             </tbody>
@@ -90,5 +97,11 @@
     font-size: 12px;
 }
 </style>
+
+<script nonce="<%= cspNonce %>">
+document.querySelectorAll('form[data-confirm]').forEach(f => {
+    f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+});
+</script>
 
 <%- include('../partials/footer') %>

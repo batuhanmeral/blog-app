@@ -3,93 +3,123 @@
     <main class="container admin-main">
         <div class="section-header"
             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 class="section-title" style="font-size: 1.8rem; margin:0;">Makaleler</h2>
-            <a href="/admin/posts/add" class="btn btn-primary">+ Yeni Yazı Ekle</a>
+            <h2 class="section-title" style="font-size: 1.8rem; margin:0;"><%= t('a.posts_title') %></h2>
+            <a href="/admin/posts/add" class="btn btn-primary"><%= t('a.posts_new') %></a>
         </div>
 
         <div class="filter-tabs" style="margin-bottom: 20px;">
-            <a href="/admin/posts" class="filter-tab <%= !locals.query || !locals.query.status ? 'active' : '' %>">Tümü</a>
-            <a href="/admin/posts?status=published" class="filter-tab">Yayında</a>
-            <a href="/admin/posts?status=pending" class="filter-tab">Bekleyen</a>
-            <a href="/admin/posts?status=rejected" class="filter-tab">Reddedilen</a>
+            <a href="/admin/posts" class="filter-tab <%= !locals.query || !locals.query.status ? 'active' : '' %>"><%= t('a.tab_all') %></a>
+            <a href="/admin/posts?status=published" class="filter-tab <%= locals.query && locals.query.status === 'published' ? 'active' : '' %>"><%= t('a.tab_published') %></a>
+            <a href="/admin/posts?status=draft" class="filter-tab <%= locals.query && locals.query.status === 'draft' ? 'active' : '' %>"><%= t('a.tab_draft') %></a>
         </div>
+
+        <form action="/admin/posts/bulk" method="POST" id="bulk-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <div style="display:flex; gap:10px; align-items:center; margin-bottom:12px;">
+                <select name="action" required style="padding:8px 12px; border-radius:8px;">
+                    <option value=""><%= t('a.bulk_ph') %></option>
+                    <option value="publish"><%= t('a.bulk_publish') %></option>
+                    <option value="draft"><%= t('a.bulk_draft') %></option>
+                    <option value="delete"><%= t('a.bulk_delete') %></option>
+                </select>
+                <button type="submit" class="btn btn-secondary" id="bulk-submit" disabled><%= t('a.bulk_apply') %></button>
+                <span style="color:var(--text-muted); font-size:12px;" id="bulk-count">0 <%= t('a.bulk_selected') %></span>
+            </div>
 
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Görsel</th>
-                    <th>Başlık</th>
-                    <th>Yazar</th>
-                    <th>Durum</th>
-                    <th>İstatistik</th>
-                    <th>Tarih</th>
-                    <th>İşlemler</th>
+                    <th style="width:30px;"><input type="checkbox" id="bulk-all"></th>
+                    <th><%= t('a.col_image') %></th>
+                    <th><%= t('a.col_title') %></th>
+                    <th><%= t('a.col_status') %></th>
+                    <th><%= t('a.col_stats') %></th>
+                    <th><%= t('a.date') %></th>
+                    <th><%= t('a.actions') %></th>
                 </tr>
             </thead>
             <tbody>
                 <% if (posts.length > 0) { %>
                     <% posts.forEach(post => { %>
                         <tr>
+                            <td><input type="checkbox" name="ids" value="<%= post._id %>" class="bulk-row"></td>
                             <td>
-                                <img src="<%= post.image %>" alt="" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
+                                <img src="<%= post.image %>" alt="<%= post.imageAlt || '' %>" style="width: 60px; height: 40px; object-fit: cover; border-radius: 4px;">
                             </td>
                             <td>
                                 <div class="post-title-cell">
-                                    <a href="/blog/<%= post.id %>" target="_blank"><%= post.title %></a>
-                                    <% if (post.Tags && post.Tags.length > 0) { %>
-                                    <div class="post-tags">
-                                        <% post.Tags.forEach(tag => { %>
-                                        <span class="mini-tag" style="background-color: <%= tag.color %>"><%= tag.name %></span>
-                                        <% }); %>
-                                    </div>
-                                    <% } %>
+                                    <a href="/blog/<%= post._id %>" target="_blank"><%= post.title %></a>
                                 </div>
                             </td>
-                            <td><%= post.User ? (post.User.name || post.User.username) : 'Bilinmeyen' %></td>
                             <td>
                                 <span class="status-badge status-<%= post.status %>">
-                                    <%= post.status === 'published' ? 'Yayında' : post.status === 'pending' ? 'Bekliyor' : post.status === 'rejected' ? 'Reddedildi' : post.status %>
+                                    <%= post.status === 'published' ? t('a.st_published') : t('a.st_draft') %>
                                 </span>
                             </td>
                             <td class="stats-cell">
                                 <span title="Görüntülenme"><i class="fas fa-eye"></i> <%= post.viewCount || 0 %></span>
                                 <span title="Okuma süresi"><i class="fas fa-clock"></i> <%= post.readTime || 1 %> dk</span>
                             </td>
-                            <td><%= new Date(post.date).toLocaleDateString('tr-TR') %></td>
+                            <td><%= new Date(post.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR') %></td>
                             <td>
-                                <% if (post.status === 'pending' && user.role === 'admin') { %>
-                                    <a href="/blog/<%= post.id %>" target="_blank" class="action-btn" style="background: #3b82f6; color: white;" title="Önizle">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <form action="/admin/posts/<%= post.id %>/approve" method="POST" style="display:inline;">
-                                        <button type="submit" class="action-btn" style="background: #10b981; color: white; border: none; cursor: pointer;" title="Onayla">
-                                            <i class="fas fa-check"></i>
-                                        </button>
-                                    </form>
-                                    <form action="/admin/posts/<%= post.id %>/reject" method="POST" style="display:inline;" onsubmit="return confirm('Reddetmek istediğinize emin misiniz?');">
-                                        <button type="submit" class="action-btn" style="background: #ef4444; color: white; border: none; cursor: pointer;" title="Reddet">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </form>
-                                <% } else if (user.role === 'admin' || (post.userId === user.id)) { %>
-                                    <a href="/admin/posts/edit/<%= post.id %>" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
-                                    <form action="/admin/posts/delete/<%= post.id %>" method="POST" style="display:inline;" onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
-                                        <button type="submit" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>
-                                    </form>
-                                <% } else { %>
-                                    <span class="text-muted">Yetkisiz</span>
-                                <% } %>
+                                <a href="/admin/posts/edit/<%= post._id %>" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                                <button type="button" class="action-btn btn-delete" data-delete-id="<%= post._id %>"><i class="fas fa-trash"></i></button>
                             </td>
                         </tr>
                     <% }) %>
                 <% } else { %>
                     <tr>
-                        <td colspan="7" style="text-align: center;">Henüz yazı yok.</td>
+                        <td colspan="7" style="text-align: center;"><%= t('a.posts_empty') %></td>
                     </tr>
                 <% } %>
             </tbody>
         </table>
+        </form>
+
+        <% posts.forEach(post => { %>
+            <form action="/admin/posts/delete/<%= post._id %>" method="POST" id="del-<%= post._id %>" style="display:none;">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            </form>
+        <% }) %>
     </main>
+
+    <script nonce="<%= cspNonce %>">
+        (function () {
+            const all = document.getElementById('bulk-all');
+            const rows = document.querySelectorAll('.bulk-row');
+            const countEl = document.getElementById('bulk-count');
+            const submitBtn = document.getElementById('bulk-submit');
+            const form = document.getElementById('bulk-form');
+
+            function refresh() {
+                const checked = document.querySelectorAll('.bulk-row:checked').length;
+                countEl.textContent = checked + ' <%= t('a.bulk_selected') %>';
+                submitBtn.disabled = checked === 0;
+            }
+
+            if (all) all.addEventListener('change', () => {
+                rows.forEach(r => r.checked = all.checked);
+                refresh();
+            });
+            rows.forEach(r => r.addEventListener('change', refresh));
+
+            if (form) form.addEventListener('submit', (e) => {
+                const action = form.action.value || form.querySelector('[name=action]').value;
+                if (action === 'delete' && !confirm('<%= t('a.posts_bulk_confirm') %>')) {
+                    e.preventDefault();
+                }
+            });
+
+            document.querySelectorAll('[data-delete-id]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (confirm('<%= t('a.confirm_delete') %>')) {
+                        document.getElementById('del-' + btn.dataset.deleteId).submit();
+                    }
+                });
+            });
+        })();
+    </script>
 
     <style>
     .filter-tabs {
@@ -115,18 +145,6 @@
     .post-title-cell a:hover {
         color: var(--primary-color);
     }
-    .post-tags {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
-        margin-top: 6px;
-    }
-    .mini-tag {
-        padding: 2px 8px;
-        border-radius: 10px;
-        font-size: 10px;
-        color: #fff;
-    }
     .status-badge {
         padding: 4px 10px;
         border-radius: 12px;
@@ -134,8 +152,6 @@
         font-weight: 500;
     }
     .status-published { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-    .status-pending { background: rgba(234, 179, 8, 0.2); color: #eab308; }
-    .status-rejected { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
     .status-draft { background: rgba(107, 114, 128, 0.2); color: #6b7280; }
     .stats-cell {
         font-size: 12px;

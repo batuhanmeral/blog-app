@@ -1,23 +1,35 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Category = sequelize.define('Category', {
+const categorySchema = new mongoose.Schema({
     name: {
-        type: Sequelize.STRING,
-        allowNull: false,
-        unique: true
+        type: String,
+        required: true,
+        unique: true,
+        trim: true
     },
     slug: {
-        type: Sequelize.STRING,
-        unique: true
+        type: String,
+        unique: true,
+        index: true
     },
     color: {
-        type: Sequelize.STRING,
-        defaultValue: '#10b981'
+        type: String,
+        default: '#10b981'
+    },
+    archived: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    archivedAt: {
+        type: Date,
+        default: null
     }
+}, {
+    timestamps: true
 });
 
-Category.generateSlug = (name) => {
+categorySchema.statics.generateSlug = function (name) {
     return name
         .toLowerCase()
         .replace(/ğ/g, 'g')
@@ -30,4 +42,4 @@ Category.generateSlug = (name) => {
         .replace(/^-+|-+$/g, '');
 };
 
-module.exports = Category;
+module.exports = mongoose.model('Category', categorySchema);

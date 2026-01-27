@@ -1,27 +1,7 @@
-const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-const helmetConfig = helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com", "https://cdn.jsdelivr.net"],
-            fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
-            imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.unsplash.com"],
-            connectSrc: ["'self'"],
-            frameSrc: ["'none'"],
-            objectSrc: ["'none'"],
-            upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
-        }
-    },
-    crossOriginEmbedderPolicy: false,
-    hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
-    }
-});
+// Not: CSP/Helmet yapılandırması nonce desteğiyle middleware/csp.js içindedir.
+// Burada yalnızca rate limiter'lar ve girdi trimleme bulunur.
 
 const generalLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -44,7 +24,21 @@ const loginLimiter = rateLimit({
     },
     standardHeaders: true,
     legacyHeaders: false,
-    skipSuccessfulRequests: true
+    skipSuccessfulRequests: true,
+    // Başarısız girişler 302 redirect döndürdüğü için varsayılan
+    // (statusCode < 400) "başarılı" sayımı sayacı sıfırlardı. Yalnızca
+    // controller'ın işaretlediği GERÇEK giriş başarısı sayaçtan düşülsün.
+    requestWasSuccessful: (req, res) => res.locals.loginSucceeded === true
+});
+
+const commentLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 5,
+    message: {
+        error: 'Çok fazla yorum gönderdiniz. Lütfen biraz sonra tekrar deneyin.'
+    },
+    standardHeaders: true,
+    legacyHeaders: false
 });
 
 const sanitizeInput = (req, res, next) => {
@@ -59,8 +53,8 @@ const sanitizeInput = (req, res, next) => {
 };
 
 module.exports = {
-    helmetConfig,
     generalLimiter,
     loginLimiter,
+    commentLimiter,
     sanitizeInput
 };

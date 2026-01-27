@@ -2,17 +2,17 @@
 
     <main class="container admin-main">
         <div class="section-header">
-            <h2 class="section-title">Gelen Mesajlar</h2>
+            <h2 class="section-title"><%= t('a.msg_title') %></h2>
         </div>
 
         <table class="admin-table">
             <thead>
                 <tr>
-                    <th>Gönderen</th>
-                    <th>E-posta</th>
-                    <th>Mesaj</th>
-                    <th>Tarih</th>
-                    <th>İşlemler</th>
+                    <th><%= t('a.msg_from') %></th>
+                    <th><%= t('a.msg_email') %></th>
+                    <th><%= t('a.msg_message') %></th>
+                    <th><%= t('a.date') %></th>
+                    <th><%= t('a.actions') %></th>
                 </tr>
             </thead>
             <tbody>
@@ -29,20 +29,21 @@
                                 <%= msg.message.substring(0, 50) %><%= msg.message.length > 50 ? '...' : '' %>
                             </td>
                             <td>
-                                <%= new Date(msg.date).toLocaleDateString('tr-TR') %>
+                                <%= new Date(msg.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR') %>
                             </td>
                             <td>
-                                <button type="button" class="action-btn btn-view" 
+                                <button type="button" class="action-btn btn-view"
                                     data-name="<%= msg.name %>"
                                     data-email="<%= msg.email %>"
                                     data-message-id="<%= index %>"
-                                    data-date="<%= new Date(msg.date).toLocaleDateString('tr-TR') %>"
-                                    title="Detay">
+                                    data-date="<%= new Date(msg.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR') %>"
+                                    title="<%= t('a.msg_view') %>">
                                     <i class="fas fa-eye"></i>
                                 </button>
                                 <form action="/admin/messages/delete/<%= msg.id %>" method="POST"
                                     style="display:inline;"
-                                    onsubmit="return confirm('Silmek istediğinize emin misiniz?');">
+                                    data-confirm="<%= t('a.confirm_delete') %>">
+                                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                                     <button type="submit" class="action-btn btn-delete"><i
                                             class="fas fa-trash"></i></button>
                                 </form>
@@ -51,7 +52,7 @@
                         <% }) %>
                             <% } else { %>
                                 <tr>
-                                    <td colspan="5" style="text-align: center;">Henüz mesaj yok.</td>
+                                    <td colspan="5" style="text-align: center;"><%= t('a.msg_empty') %></td>
                                 </tr>
                                 <% } %>
             </tbody>
@@ -62,24 +63,24 @@
     <div id="messageModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Mesaj Detayı</h3>
-                <button type="button" class="modal-close" onclick="closeMessageModal()">&times;</button>
+                <h3><%= t('a.msg_detail') %></h3>
+                <button type="button" class="modal-close" id="close-message-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="message-detail-item">
-                    <label>Gönderen:</label>
+                    <label><%= t('a.msg_from') %>:</label>
                     <span id="modalName"></span>
                 </div>
                 <div class="message-detail-item">
-                    <label>E-posta:</label>
+                    <label><%= t('a.msg_email') %>:</label>
                     <a id="modalEmail" href="#" style="color: var(--primary-color);"></a>
                 </div>
                 <div class="message-detail-item">
-                    <label>Tarih:</label>
+                    <label><%= t('a.date') %>:</label>
                     <span id="modalDate"></span>
                 </div>
                 <div class="message-detail-item">
-                    <label>Mesaj:</label>
+                    <label><%= t('a.msg_message') %>:</label>
                     <div id="modalMessage" class="message-content"></div>
                 </div>
             </div>
@@ -164,7 +165,11 @@
     }
     </style>
 
-    <script>
+    <script nonce="<%= cspNonce %>">
+    document.querySelectorAll('form[data-confirm]').forEach(f => {
+        f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+    });
+    document.getElementById('close-message-modal').addEventListener('click', closeMessageModal);
     // Mesajları JavaScript array'inde tut
     const messagesData = [
         <% messages.forEach((msg, index) => { %>
@@ -172,7 +177,7 @@
             name: "<%= msg.name.replace(/"/g, '\\"') %>",
             email: "<%= msg.email %>",
             message: `<%- msg.message.replace(/`/g, "\\`").replace(/\\/g, "\\\\") %>`,
-            date: "<%= new Date(msg.date).toLocaleDateString('tr-TR') %>"
+            date: "<%= new Date(msg.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR') %>"
         }<%= index < messages.length - 1 ? ',' : '' %>
         <% }); %>
     ];

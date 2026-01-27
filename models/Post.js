@@ -1,69 +1,87 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const Post = sequelize.define('Post', {
+const postSchema = new mongoose.Schema({
     title: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: String,
+        required: true,
+        trim: true
     },
     slug: {
-        type: Sequelize.STRING,
-        unique: true
+        type: String,
+        unique: true,
+        index: true
     },
     content: {
-        type: Sequelize.TEXT,
-        allowNull: false
+        type: String,
+        required: true
     },
     image: {
-        type: Sequelize.STRING
+        type: String
+    },
+    imageAlt: {
+        type: String,
+        default: '',
+        maxlength: 160
     },
     summary: {
-        type: Sequelize.STRING
+        type: String,
+        maxlength: 300
     },
     seoTitle: {
-        type: Sequelize.STRING(70),
-        allowNull: true
+        type: String,
+        maxlength: 70
     },
     seoDescription: {
-        type: Sequelize.STRING(160),
-        allowNull: true
+        type: String,
+        maxlength: 160
     },
     seoKeywords: {
-        type: Sequelize.STRING,
-        allowNull: true
+        type: String
     },
     ogImage: {
-        type: Sequelize.STRING,
-        allowNull: true
+        type: String
     },
     viewCount: {
-        type: Sequelize.INTEGER,
-        defaultValue: 0
+        type: Number,
+        default: 0
     },
     readTime: {
-        type: Sequelize.INTEGER,
-        defaultValue: 1
+        type: Number,
+        default: 1
     },
-    date: {
-        type: Sequelize.DATE,
-        defaultValue: Sequelize.NOW
-    },
+    categories: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Category'
+    }],
     status: {
-        type: Sequelize.STRING,
-        defaultValue: 'pending',
-        allowNull: false
+        type: String,
+        enum: ['draft', 'published'],
+        default: 'published'
     },
-    userId: {
-        type: Sequelize.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Users',
-            key: 'id'
-        }
+    author: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
+    tags: {
+        type: [String],
+        default: [],
+        index: true
     }
+}, {
+    timestamps: true
 });
 
-Post.generateSlug = (title) => {
+postSchema.index({ status: 1, createdAt: -1 });
+postSchema.index({ 'categories': 1 });
+postSchema.index({ author: 1 });
+// Tam metin arama. Türkçe MongoDB'de desteklenmediğinden default_language:'none'
+// ile stemming/stop-word kapatılır (Türkçe kelimeler bozulmadan eşleşir).
+postSchema.index(
+    { title: 'text', summary: 'text', content: 'text', tags: 'text' },
+    { weights: { title: 10, tags: 6, summary: 4, content: 1 }, name: 'post_search', default_language: 'none' }
+);
+
+postSchema.statics.generateSlug = function (title) {
     return title
         .toLowerCase()
         .replace(/ğ/g, 'g')
@@ -76,10 +94,10 @@ Post.generateSlug = (title) => {
         .replace(/^-+|-+$/g, '');
 };
 
-Post.calculateReadTime = (content) => {
+postSchema.statics.calculateReadTime = function (content) {
     const plainText = content.replace(/<[^>]+>/g, '').replace(/[#*`]/g, '');
     const wordCount = plainText.split(/\s+/).filter(word => word.length > 0).length;
     return Math.max(1, Math.ceil(wordCount / 200));
 };
 
-module.exports = Post;
+module.exports = mongoose.model('Post', postSchema);

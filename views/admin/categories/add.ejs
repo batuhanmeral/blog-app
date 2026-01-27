@@ -2,21 +2,22 @@
 
 <main class="container admin-main">
     <div class="admin-header">
-        <h1>Yeni Kategori Ekle</h1>
+        <h1><%= t('a.cat_new_title') %></h1>
         <a href="/admin/categories" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Geri
+            <i class="fas fa-arrow-left"></i> <%= t('a.back') %>
         </a>
     </div>
 
     <div class="admin-card">
         <form action="/admin/categories/add" method="POST" class="admin-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="form-group">
-                <label for="name">Kategori Adı</label>
-                <input type="text" id="name" name="name" required placeholder="Örn: JavaScript">
+                <label for="name"><%= t('a.cat_name') %></label>
+                <input type="text" id="name" name="name" required placeholder="<%= t('a.cat_name_ph') %>">
             </div>
             
             <div class="form-group">
-                <label for="color">Renk</label>
+                <label for="color"><%= t('a.cat_color') %></label>
                 <div class="color-picker-wrapper">
                     <input type="color" id="color" name="color" value="#10b981">
                     <span class="color-preview" id="colorPreview">#10b981</span>
@@ -24,18 +25,18 @@
             </div>
             
             <div class="form-group">
-                <label>Önizleme</label>
-                <span class="tag-badge" id="tagPreview" style="background-color: #10b981">Kategori Adı</span>
+                <label><%= t('a.cat_preview') %></label>
+                <span class="tag-badge" id="tagPreview" style="background-color: #10b981"><%= t('a.cat_name') %></span>
             </div>
-            
+
             <button type="submit" class="btn btn-primary">
-                <i class="fas fa-save"></i> Kaydet
+                <i class="fas fa-save"></i> <%= t('a.save') %>
             </button>
         </form>
     </div>
 </main>
 
-<script>
+<script nonce="<%= cspNonce %>">
 document.getElementById('color').addEventListener('input', function() {
     document.getElementById('colorPreview').textContent = this.value;
     document.getElementById('tagPreview').style.backgroundColor = this.value;

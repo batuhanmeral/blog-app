@@ -29,3 +29,5 @@ coverage/
 tmp/
 temp/
 *.tmp
+
+.docs/

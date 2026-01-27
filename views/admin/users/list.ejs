@@ -1,69 +1,63 @@
 <%- include('../partials/header') %>
 
-    <main class="container admin-main">
-        <div class="section-header"
-            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h2 class="section-title" style="font-size: 1.8rem; margin:0;">Kullanıcılar</h2>
-            <a href="/admin/users/add" class="btn btn-primary">+ Yeni Kullanıcı Ekle</a>
-        </div>
+<main class="container admin-main">
+    <div class="section-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h2 class="section-title" style="font-size:1.8rem; margin:0;"><%= t('a.users_title') %></h2>
+        <a href="/admin/users/add" class="btn btn-primary"><%= t('a.users_new') %></a>
+    </div>
 
-        <table class="admin-table">
-            <thead>
+    <% if (locals.flash && flash.success) { %>
+        <div style="background: rgba(16,185,129,.1); border:1px solid #10b981; color:#10b981; padding:10px; border-radius:8px; margin-bottom:15px;"><%= flash.success %></div>
+    <% } %>
+    <% if (locals.flash && flash.error) { %>
+        <div style="background: rgba(239,68,68,.1); border:1px solid #ef4444; color:#ef4444; padding:10px; border-radius:8px; margin-bottom:15px;"><%= flash.error %></div>
+    <% } %>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th><%= t('a.u_username') %></th>
+                <th><%= t('a.u_name') %></th>
+                <th><%= t('a.u_role') %></th>
+                <th><%= t('a.u_2fa') %></th>
+                <th><%= t('a.u_lastlogin') %></th>
+                <th><%= t('a.actions') %></th>
+            </tr>
+        </thead>
+        <tbody>
+            <% users.forEach(u => { %>
                 <tr>
-                    <th>Kullanıcı Adı</th>
-                    <th>Ad Soyad</th>
-                    <th>Rol</th>
-                    <th>Kayıt Tarihi</th>
-                    <th>İşlemler</th>
+                    <td><%= u.username %></td>
+                    <td><%= u.name || '-' %></td>
+                    <td><span class="role-badge role-<%= u.role %>"><%= u.role %></span></td>
+                    <td><%= u.totpEnabled ? t('a.u_2fa_on') : t('a.u_2fa_off') %></td>
+                    <td><%= u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleString(locale === 'en' ? 'en-US' : 'tr-TR') : '-' %></td>
+                    <td>
+                        <a href="/admin/users/edit/<%= u._id %>" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
+                        <% if (String(u._id) !== String(user.id)) { %>
+                        <form action="/admin/users/delete/<%= u._id %>" method="POST" style="display:inline;" data-confirm="<%= t('a.u_confirm') %>">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button type="submit" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>
+                        </form>
+                        <% } %>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                <% if (users.length > 0) { %>
-                    <% users.forEach(u => { %>
-                        <tr>
-                            <td><%= u.username %></td>
-                            <td><%= u.name || '-' %></td>
-                            <td>
-                                <span class="role-badge role-<%= u.role %>">
-                                    <%= u.role === 'admin' ? 'Admin' : 'Yazar' %>
-                                </span>
-                            </td>
-                            <td><%= new Date(u.date || u.createdAt).toLocaleDateString('tr-TR') %></td>
-                            <td>
-                                <% if (u.role !== 'admin') { %>
-                                <a href="/admin/users/edit/<%= u.id %>" class="action-btn btn-edit"><i class="fas fa-edit"></i></a>
-                                <form action="/admin/users/delete/<%= u.id %>" method="POST" style="display:inline;"
-                                    onsubmit="return confirm('Kullanıcıyı silmek istediğinize emin misiniz?');">
-                                    <button type="submit" class="action-btn btn-delete"><i class="fas fa-trash"></i></button>
-                                </form>
-                                <% } %>
-                            </td>
-                        </tr>
-                    <% }) %>
-                <% } else { %>
-                    <tr>
-                        <td colspan="5" style="text-align: center;">Kullanıcı bulunamadı.</td>
-                    </tr>
-                <% } %>
-            </tbody>
-        </table>
+            <% }) %>
+        </tbody>
+    </table>
 
-        <style>
-        .role-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-        .role-admin {
-            background: rgba(239, 68, 68, 0.2);
-            color: #ef4444;
-        }
-        .role-writer {
-            background: rgba(59, 130, 246, 0.2);
-            color: #3b82f6;
-        }
-        </style>
-    </main>
+    <style>
+    .role-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 500; }
+    .role-admin { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .role-editor { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+    .role-author { background: rgba(107, 114, 128, 0.2); color: #94a3b8; }
+    </style>
+</main>
+
+<script nonce="<%= cspNonce %>">
+document.querySelectorAll('form[data-confirm]').forEach(f => {
+    f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
+});
+</script>
 
 <%- include('../partials/footer') %>

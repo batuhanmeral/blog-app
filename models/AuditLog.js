@@ -1,64 +1,39 @@
-const Sequelize = require('sequelize');
-const sequelize = require('../config/database');
+const mongoose = require('mongoose');
 
-const AuditLog = sequelize.define('AuditLog', {
-    userId: {
-        type: Sequelize.INTEGER,
-        allowNull: false
-    },
+const auditLogSchema = new mongoose.Schema({
     username: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: String,
+        required: true
     },
     action: {
-        type: Sequelize.ENUM(
+        type: String,
+        enum: [
             'LOGIN', 'LOGOUT',
             'CREATE_POST', 'UPDATE_POST', 'DELETE_POST',
-            'CREATE_USER', 'UPDATE_USER', 'DELETE_USER',
             'CREATE_CATEGORY', 'UPDATE_CATEGORY', 'DELETE_CATEGORY',
-            'APPROVE_COMMENT', 'DELETE_COMMENT',
             'READ_MESSAGE', 'DELETE_MESSAGE',
-            'UPDATE_SETTINGS'
-        ),
-        allowNull: false
+            'MEDIA_UPLOAD', 'MEDIA_DELETE',
+            'APPROVE_COMMENT', 'SPAM_COMMENT', 'DELETE_COMMENT',
+            'UPDATE_SETTINGS',
+            'UPDATE_PROFILE', 'DELETE_PROFILE'
+        ],
+        required: true
     },
-    targetType: {
-        type: Sequelize.STRING,
-        allowNull: true
-    },
-    targetId: {
-        type: Sequelize.INTEGER,
-        allowNull: true
-    },
-    targetTitle: {
-        type: Sequelize.STRING,
-        allowNull: true
-    },
-    details: {
-        type: Sequelize.TEXT,
-        allowNull: true,
-        get() {
-            const value = this.getDataValue('details');
-            return value ? JSON.parse(value) : null;
-        },
-        set(value) {
-            this.setDataValue('details', value ? JSON.stringify(value) : null);
-        }
-    },
-    ipAddress: {
-        type: Sequelize.STRING(45),
-        allowNull: true
-    },
-    userAgent: {
-        type: Sequelize.STRING(500),
-        allowNull: true
-    }
+    targetType: String,
+    targetId: String,
+    targetTitle: String,
+    details: mongoose.Schema.Types.Mixed,
+    ipAddress: String,
+    userAgent: String
+}, {
+    timestamps: true
 });
 
-AuditLog.log = async (req, action, target = {}) => {
+auditLogSchema.index({ createdAt: -1 });
+
+auditLogSchema.statics.log = async function (req, action, target = {}) {
     try {
-        await AuditLog.create({
-            userId: req.session?.user?.id || 0,
+        await this.create({
             username: req.session?.user?.username || 'system',
             action,
             targetType: target.type || null,
@@ -73,4 +48,4 @@ AuditLog.log = async (req, action, target = {}) => {
     }
 };
 
-module.exports = AuditLog;
+module.exports = mongoose.model('AuditLog', auditLogSchema);
