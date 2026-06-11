@@ -6,15 +6,16 @@ Crypton is a personal **cybersecurity blog** for publishing articles, technical 
 
 ## 🚀 Features
 
-- **Content management**: Markdown posts (EasyMDE editor), categories, tags, cover images, and a media library with automatic WebP conversion + resizing (`sharp`).
-- **Full-text search**: Turkish-friendly `$text` search over title/summary/content/tags, plus tag and category filter pages.
-- **Authentication & RBAC**: argon2id hashing (legacy bcrypt auto-upgraded on login), three roles (`admin` / `editor` / `author`) with per-resource ownership, and forced password change on first login.
-- **Two-factor auth (2FA)**: optional per-user TOTP (`speakeasy` + QR code) with single-use, hashed backup/recovery codes.
-- **Hardened security**: Helmet CSP with per-request nonce, session-synced CSRF (constant-time compare), session fingerprinting, rate limiting, contact-form honeypot, and `sanitize-html` on rendered Markdown.
-- **Internationalization (i18n)**: complete TR/EN UI for both the public site and admin panel, with a one-click navbar language switch and session persistence.
-- **SEO & syndication**: meta/Open Graph/JSON-LD tags, canonical URLs, RSS feed, sitemap, and robots.txt.
-- **Operations**: audit log with CSV/JSON export, per-post view tracking, traffic dashboard, and structured logging (`pino`).
-- **Reading experience**: table of contents, reading-progress bar, code syntax highlighting, related posts, and a moderated comment system.
+- **Write & publish**: a Markdown editor with categories, tags, cover images, and a built-in media library.
+- **Search & browse**: fast full-text search with dedicated tag and category pages.
+- **Team roles**: admin, editor, and author accounts — everyone sees and manages only what they're allowed to.
+- **Two-factor login (2FA)**: optional extra security with an authenticator app and backup codes.
+- **Secure by default**: protected logins, spam-resistant forms, and safe handling of user content.
+- **Dark & light theme**: one-click theme switch that's remembered across visits.
+- **Bilingual (TR / EN)**: switch the whole site and admin panel between Turkish and English instantly.
+- **SEO ready**: clean meta tags, shareable link previews, an RSS feed, and a sitemap.
+- **Insights**: a traffic dashboard, post view counts, and an activity log.
+- **Pleasant reading**: table of contents, reading-progress bar, code highlighting, related posts, and comments.
 
 ## 🛠️ Tech Stack
 
