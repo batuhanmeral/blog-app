@@ -35,7 +35,7 @@
                                 <button type="button" class="action-btn btn-view"
                                     data-name="<%= msg.name %>"
                                     data-email="<%= msg.email %>"
-                                    data-message-id="<%= index %>"
+                                    data-message="<%= msg.message %>"
                                     data-date="<%= new Date(msg.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR') %>"
                                     title="<%= t('a.msg_view') %>">
                                     <i class="fas fa-eye"></i>
@@ -87,7 +87,7 @@
         </div>
     </div>
 
-    <style>
+    <style nonce="<%= cspNonce %>">
     .btn-view {
         background: rgba(59, 130, 246, 0.2);
         color: #3b82f6;
@@ -170,32 +170,17 @@
         f.addEventListener('submit', (e) => { if (!confirm(f.dataset.confirm)) e.preventDefault(); });
     });
     document.getElementById('close-message-modal').addEventListener('click', closeMessageModal);
-    // Mesajları JavaScript array'inde tut
-    const messagesData = [
-        <% messages.forEach((msg, index) => { %>
-        {
-            name: "<%= msg.name.replace(/"/g, '\\"') %>",
-            email: "<%= msg.email %>",
-            message: `<%- msg.message.replace(/`/g, "\\`").replace(/\\/g, "\\\\") %>`,
-            date: "<%= new Date(msg.createdAt).toLocaleDateString(locale === 'en' ? 'en-US' : 'tr-TR') %>"
-        }<%= index < messages.length - 1 ? ',' : '' %>
-        <% }); %>
-    ];
 
-    // Tüm görüntüle butonlarına event listener ekle
+    // Mesaj verisi butonun data-* attribute'larında (EJS <%= %> ile HTML-escape'li)
+    // taşınır; textContent/href ile DOM'a yazıldığından enjeksiyon mümkün değil.
     document.querySelectorAll('.btn-view').forEach(btn => {
         btn.addEventListener('click', function() {
-            const index = parseInt(this.dataset.messageId);
-            const msg = messagesData[index];
-            
-            if (msg) {
-                document.getElementById('modalName').textContent = msg.name;
-                document.getElementById('modalEmail').textContent = msg.email;
-                document.getElementById('modalEmail').href = 'mailto:' + msg.email;
-                document.getElementById('modalMessage').textContent = msg.message;
-                document.getElementById('modalDate').textContent = msg.date;
-                document.getElementById('messageModal').style.display = 'flex';
-            }
+            document.getElementById('modalName').textContent = this.dataset.name;
+            document.getElementById('modalEmail').textContent = this.dataset.email;
+            document.getElementById('modalEmail').href = 'mailto:' + this.dataset.email;
+            document.getElementById('modalMessage').textContent = this.dataset.message;
+            document.getElementById('modalDate').textContent = this.dataset.date;
+            document.getElementById('messageModal').style.display = 'flex';
         });
     });
 

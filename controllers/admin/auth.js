@@ -49,6 +49,7 @@ exports.login = async (req, res) => {
         if (user.totpEnabled) {
             if (!totp) {
                 req.session.pendingTotpUserId = user._id.toString();
+                res.locals.loginSucceeded = true;
                 return res.redirect(loginUrl());
             }
 

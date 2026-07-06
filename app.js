@@ -19,7 +19,7 @@ const i18n = require('./middleware/i18n');
 
 const app = express();
 
-if (config.isProd) app.set('trust proxy', 1);
+if (config.trustProxy !== false) app.set('trust proxy', config.trustProxy);
 
 app.use(pinoHttp({ logger, autoLogging: { ignore: (req) => req.url.startsWith('/assets/') } }));
 

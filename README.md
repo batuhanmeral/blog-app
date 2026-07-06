@@ -10,7 +10,7 @@ Crypton is a personal **cybersecurity blog** for publishing articles, technical 
 - **Search & browse**: fast full-text search with dedicated tag and category pages.
 - **Team roles**: admin, editor, and author accounts — everyone sees and manages only what they're allowed to.
 - **Two-factor login (2FA)**: optional extra security with an authenticator app and backup codes.
-- **Secure by default**: protected logins, spam-resistant forms, and safe handling of user content.
+- **Secure by default**: nonce-based CSP, CSRF protection, rate-limited logins, spam-resistant forms, and sanitized user content.
 - **Dark & light theme**: one-click theme switch that's remembered across visits.
 - **Bilingual (TR / EN)**: switch the whole site and admin panel between Turkish and English instantly.
 - **SEO ready**: clean meta tags, shareable link previews, an RSS feed, and a sitemap.
@@ -63,6 +63,11 @@ MONGODB_URI=mongodb://localhost:27017/crypton
 
 # Session — REQUIRED in production (process exits if left default)
 SESSION_SECRET=a-long-random-hard-to-guess-string
+
+# Trust reverse-proxy headers (X-Forwarded-*) so req.ip is the real client IP.
+# Number of hops, "true"/"false", or blank (defaults to 1 in production, off otherwise).
+# Set this when running behind Nginx / a load balancer so rate limits and IP hashes are accurate.
+TRUST_PROXY=1
 
 # Hide the admin login behind a secret slug -> /admin/<slug>
 ADMIN_LOGIN_PATH=secret-entry

@@ -21,13 +21,19 @@ const helmetWithNonce = helmet({
                     "https://cdn.jsdelivr.net",
                     "https://cdnjs.cloudflare.com"
                 ],
-                styleSrc: [
+                // <style> ve <link> öğeleri: nonce zorunlu; 'unsafe-inline' YOK.
+                // Böylece enjekte edilen bir <style> bloğu CSP tarafından engellenir.
+                styleSrcElem: [
                     "'self'",
-                    "'unsafe-inline'",
+                    (req, res) => `'nonce-${res.locals.cspNonce}'`,
                     "https://fonts.googleapis.com",
                     "https://cdnjs.cloudflare.com",
                     "https://cdn.jsdelivr.net"
                 ],
+                // Satır içi style="" attribute'ları: nonce ile korunamaz; şablonlarda
+                // 169 inline stil olduğundan 'unsafe-inline' burada kalır (attribute
+                // enjeksiyonu, <style>/script enjeksiyonuna göre çok daha düşük riskli).
+                styleSrcAttr: ["'self'", "'unsafe-inline'"],
                 fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
                 imgSrc: ["'self'", "data:", "https://images.unsplash.com", "https://*.unsplash.com", "https://picsum.photos", "https://*.picsum.photos"],
                 connectSrc: ["'self'"],

@@ -13,6 +13,15 @@ const config = {
     port: parseInt(process.env.PORT, 10) || 3000,
     host: process.env.HOST || '0.0.0.0',
 
+    trustProxy: (() => {
+        const raw = process.env.TRUST_PROXY;
+        if (raw === undefined || raw === '') return isProd ? 1 : false;
+        if (raw === 'true') return true;
+        if (raw === 'false') return false;
+        const n = parseInt(raw, 10);
+        return Number.isNaN(n) ? raw : n;
+    })(),
+
     database: {
         uri: process.env.MONGODB_URI || 'mongodb://localhost:27017/crypton',
         options: {

@@ -41,13 +41,20 @@ const commentLimiter = rateLimit({
     legacyHeaders: false
 });
 
-const sanitizeInput = (req, res, next) => {
-    if (req.body) {
-        for (let key in req.body) {
-            if (typeof req.body[key] === 'string') {
-                req.body[key] = req.body[key].trim();
-            }
+function trimStringsDeep(value) {
+    if (typeof value === 'string') return value.trim();
+    if (Array.isArray(value)) return value.map(trimStringsDeep);
+    if (value && typeof value === 'object') {
+        for (const key of Object.keys(value)) {
+            value[key] = trimStringsDeep(value[key]);
         }
+    }
+    return value;
+}
+
+const sanitizeInput = (req, res, next) => {
+    if (req.body && typeof req.body === 'object') {
+        trimStringsDeep(req.body);
     }
     next();
 };

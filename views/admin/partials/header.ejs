@@ -5,13 +5,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= typeof title !='undefined' ? title : 'Admin Paneli' %> | Crypton
+        <%= typeof title !='undefined' ? title : 'Admin Paneli' %> | <%= app.name %>
     </title>
+    <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+    <link rel="alternate icon" href="/assets/img/favicon-32.png" sizes="32x32">
+    <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
     <link rel="stylesheet" href="/assets/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="/assets/js/theme.js"></script>
-    <style>
+    <style nonce="<%= cspNonce %>">
         .admin-nav {
             background: rgba(0, 0, 0, 0.9);
             border-bottom: 1px solid var(--border);
@@ -171,7 +174,7 @@
     <nav class="admin-nav">
         <div class="container nav-container">
             <div class="logo">
-                <a href="/admin/dashboard">Crypton</a>
+                <a href="/admin/dashboard"><%= app.name %></a>
             </div>
             <button class="admin-hamburger" id="admin-hamburger" type="button">
                 <i class="fas fa-bars"></i>

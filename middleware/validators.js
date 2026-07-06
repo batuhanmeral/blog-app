@@ -17,7 +17,8 @@ function handleResult(req, res, next) {
     }
 
     if (req.flash) req.flash('error', message);
-    return res.redirect('back');
+    // Express 5'te 'back' sihirli değeri kaldırıldı; Referer header'ından türet.
+    return res.redirect(req.get('Referrer') || '/');
 }
 
 const validate = (chains) => [...chains, handleResult];

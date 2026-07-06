@@ -5,29 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>
-        <%= typeof seoTitle !='undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'Crypton'
-            ) %> | Crypton
+        <%= typeof seoTitle !='undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : app.name
+            ) %> | <%= app.name %>
     </title>
     <meta name="description"
-        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'Crypton — siber güvenlik üzerine yazılar, analizler ve teknik incelemeler') %>">
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : app.description) %>">
     <meta name="keywords"
         content="<%= typeof seoKeywords != 'undefined' && seoKeywords ? seoKeywords : (typeof metaKeywords != 'undefined' ? metaKeywords : 'siber güvenlik, web güvenliği, ağ güvenliği, CTF, yazılım, crypton') %>">
 
     <meta property="og:type" content="<%= typeof ogType != 'undefined' ? ogType : 'website' %>">
     <meta property="og:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : app.url %>">
     <meta property="og:title"
-        content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'Crypton') %>">
+        content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : app.name) %>">
     <meta property="og:description"
-        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'Crypton — siber güvenlik üzerine yazılar ve teknik analizler') %>">
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : app.description) %>">
     <meta property="og:image"
         content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
 
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="<%= typeof ogUrl != 'undefined' ? ogUrl : app.url %>">
     <meta property="twitter:title"
-        content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : 'Crypton') %>">
+        content="<%= typeof seoTitle != 'undefined' && seoTitle ? seoTitle : (typeof title !='undefined' ? title : app.name) %>">
     <meta property="twitter:description"
-        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : 'Crypton — siber güvenlik üzerine yazılar ve teknik analizler') %>">
+        content="<%= typeof seoDescription != 'undefined' && seoDescription ? seoDescription : (typeof metaDescription != 'undefined' ? metaDescription : app.description) %>">
     <meta property="twitter:image"
         content="<%= typeof ogImage != 'undefined' && ogImage ? ogImage : '/assets/img/og-default.png' %>">
 
@@ -35,12 +35,15 @@
         <link rel="canonical" href="<%= canonicalUrl %>">
         <% } %>
 
+            <link rel="icon" href="/assets/img/favicon.svg" type="image/svg+xml">
+            <link rel="alternate icon" href="/assets/img/favicon-32.png" sizes="32x32">
+            <link rel="apple-touch-icon" href="/assets/img/apple-touch-icon.png">
             <link rel="stylesheet" href="/assets/css/style.css">
             <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap"
                 rel="stylesheet">
             <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
             <script src="/assets/js/theme.js"></script>
-            <style>
+            <style nonce="<%= cspNonce %>">
                 .lang-switch { display: inline-flex; gap: 4px; align-items: center; }
                 .lang-switch a { font-size: 12px; font-weight: 600; padding: 2px 6px; border-radius: 4px; color: var(--text-muted); }
                 .lang-switch a.active { color: var(--primary-color); background: rgba(16, 185, 129, 0.12); }
@@ -53,7 +56,7 @@
     <nav class="navbar">
         <div class="container nav-container">
             <div class="logo">
-                <a href="/">Crypton</a>
+                <a href="/"><%= app.name %></a>
             </div>
             <div class="hamburger">
                 <i class="fas fa-bars"></i>

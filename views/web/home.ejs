@@ -1,6 +1,6 @@
 <%- include('partials/header') %>
 
-    <style>
+    <style nonce="<%= cspNonce %>">
     .post-tags-mini { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:10px; }
     .tag-mini { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; color:#fff; text-decoration:none; transition: opacity .2s; }
     .tag-mini:hover { opacity: .8; }
@@ -11,7 +11,7 @@
     <section class="hero">
         <div class="hero-overlay"></div>
         <div class="container hero-content">
-            <h1 class="animate-text glitch" data-text="Crypton">Crypton</h1>
+            <h1 class="animate-text glitch" data-text="<%= app.name %>"><%= app.name %></h1>
             <p class="animate-text delay typing-cursor"><%= t('home.hero_subtitle') %></p>
             <div class="hero-btns animate-text delay-2">
                 <a href="/about" class="btn btn-primary"><%= t('home.btn_about') %></a>
