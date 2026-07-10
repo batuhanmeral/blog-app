@@ -1,10 +1,10 @@
 # Crypton
 
-> A hardened, server-rendered cybersecurity blog with a secret-path admin panel, RBAC, 2FA, and full TR/EN internationalization.
+> A hardened, server-rendered cybersecurity-themed blog with a secret-path admin panel, RBAC, 2FA, and full TR/EN internationalization.
 
-Crypton is a personal **cybersecurity blog** for publishing articles, technical write-ups, and analyses on topics like web security, network security, malware, and CTF challenges. Readers get a fast, clean reading experience, while you manage everything — posts, categories, media, and comments — from a private admin panel. Security is built in from the ground up, so your blog stays locked down without extra setup.
+Crypton is a personal **cybersecurity-themed blog** for publishing articles, technical write-ups, and analyses on topics like web security, network security, malware, and CTF challenges. Readers get a fast, clean reading experience, while you manage everything — posts, categories, media, and comments — from a private admin panel. Security is built in from the ground up, so your blog stays locked down without extra setup.
 
-## 🚀 Features
+## Features
 
 - **Write & publish**: a Markdown editor with categories, tags, cover images, and a built-in media library.
 - **Search & browse**: fast full-text search with dedicated tag and category pages.
@@ -17,7 +17,7 @@ Crypton is a personal **cybersecurity blog** for publishing articles, technical 
 - **Insights**: a traffic dashboard, post view counts, and an activity log.
 - **Pleasant reading**: table of contents, reading-progress bar, code highlighting, related posts, and comments.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 | Layer | Technologies |
 | --- | --- |
@@ -28,129 +28,37 @@ Crypton is a personal **cybersecurity blog** for publishing articles, technical 
 | **Media & Content** | sharp (image processing), multer (uploads), marked (Markdown), EasyMDE |
 | **Tooling / DevOps** | Docker, Docker Compose, pino (logging), nodemon |
 
-## 📦 Installation
+## Installation
 
-### Prerequisites
-
-- Node.js ≥ 18
-- MongoDB (local instance) — or use the bundled Docker setup
-- Docker & Docker Compose (optional, recommended)
-
-### 1. Clone & install
+Requires Node.js ≥ 18 and MongoDB (or just use Docker).
 
 ```bash
 git clone https://github.com/batuhanmeral/Crypton.git
 cd crypton
 npm install
+cp .env.example .env   # fill in your values — see .env.example for all options
+npm run dev            # http://localhost:3000 (npm start for production)
 ```
 
-### 2. Configure environment
-
-Copy the example file and fill in your values:
-
-```bash
-cp .env.example .env
-```
-
-```env
-# Application
-NODE_ENV=development
-PORT=3000
-HOST=0.0.0.0
-
-# Database
-MONGODB_URI=mongodb://localhost:27017/crypton
-
-# Session — REQUIRED in production (process exits if left default)
-SESSION_SECRET=a-long-random-hard-to-guess-string
-
-# Trust reverse-proxy headers (X-Forwarded-*) so req.ip is the real client IP.
-# Number of hops, "true"/"false", or blank (defaults to 1 in production, off otherwise).
-# Set this when running behind Nginx / a load balancer so rate limits and IP hashes are accurate.
-TRUST_PROXY=1
-
-# Hide the admin login behind a secret slug -> /admin/<slug>
-ADMIN_LOGIN_PATH=secret-entry
-
-# Optional: persistent uploads directory ($DATA_PATH/uploads)
-DATA_PATH=/var/data
-
-# Public site URL (RSS / sitemap / canonical / Open Graph)
-SITE_URL=https://your-domain.com
-
-# 2FA issuer label shown in authenticator apps
-TOTP_ISSUER=Crypton
-```
-
-### 3. Run
-
-```bash
-npm run dev     # development (nodemon, :3000)
-npm start       # production (NODE_ENV=production)
-```
-
-### Run with Docker (app + MongoDB)
+Or run everything (app + MongoDB) with Docker:
 
 ```bash
 docker compose up -d --build
 ```
 
-Compose provisions MongoDB 7 with a healthcheck and persistent volumes (`mongo-data`, `uploads`), and overrides `MONGODB_URI` so the app reaches the `mongo` service on the compose network.
+## Screenshots
 
-## 💡 Usage
+<p align="center">
+  <strong>Home Page</strong><br/>
+  <img src="docs/home.png" alt="Home" width="850"/>
+  <br/><br/>
+  <strong>Admin Dashboard</strong><br/>
+  <img src="docs/dashboard.png" alt="Dashboard" width="850"/>
+  <br/><br/>
+  <strong>Articles Management</strong><br/>
+  <img src="docs/articles.png" alt="Articles" width="850"/>
+</p>
 
-### Create the first admin
-
-On a fresh database, bootstrap an admin account (run it again with the same username to reset the password):
-
-```bash
-npm run create-admin -- <username> <password>
-
-# inside Docker:
-docker compose exec app npm run create-admin -- <username> <password>
-```
-
-Then sign in to the admin panel at the secret path you set in `ADMIN_LOGIN_PATH`:
-
-```text
-http://localhost:3000/admin/secret-entry
-```
-
-> Additional users are created from the admin panel (**Users** section), which is restricted to the `admin` role. Each role sees only the panels it is allowed to use.
-
-### Common operations
-
-```bash
-npm run create-admin -- <user> <pass>  # Create (or reset the password of) an admin account
-npm run migrate:roles                  # Backfill roles / password algo / post ownership
-```
-
-### Public routes
-
-| Route | Description |
-| --- | --- |
-| `GET /` | Home (latest posts) |
-| `GET /blog?q=<term>` | Full-text search |
-| `GET /tag/:tag` · `GET /category/:slug` | Filtered lists |
-| `GET /blog/:id` | Post detail |
-| `POST /blog/:id/comments` | Submit a comment (rate-limited, moderated) |
-| `GET /rss.xml` · `/sitemap.xml` · `/robots.txt` | SEO endpoints |
-
-### Roles & permissions
-
-| Capability | admin | editor | author |
-| --- | :---: | :---: | :---: |
-| Manage own posts / media | ✓ | ✓ | ✓ |
-| Manage **all** posts / media | ✓ | ✓ | — |
-| Categories & contact messages | ✓ | ✓ | — |
-| Users & audit log | ✓ | — | — |
-
-## 📸 Screenshots
-
-| Home | Dashboard | Articles |
-| :---: | :---: | :---: |
-| ![Home](docs/home.png) | ![Dashboard](docs/dashboard.png) | ![Articles](docs/articles.png) |
-
-## 📄 License
+## License
 
 Released under the [MIT License](LICENSE). © 2026 Batuhan Meral.
